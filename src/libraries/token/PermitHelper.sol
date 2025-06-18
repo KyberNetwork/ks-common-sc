@@ -2,13 +2,14 @@
 
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol';
+import {CustomRevert} from 'src/libraries/CustomRevert.sol';
+import {CalldataDecoder} from 'src/libraries/calldata/CalldataDecoder.sol';
 
-import '../CustomRevert.sol';
-import '../calldata/CalldataDecoder.sol';
+import {IDaiLikePermit} from 'src/interfaces/IDaiLikePermit.sol';
+import {IPermit2} from 'src/interfaces/IPermit2.sol';
 
-import 'src/interfaces/IDaiLikePermit.sol';
-import 'src/interfaces/IPermit2.sol';
+import {IERC20Permit} from
+  'openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol';
 
 library PermitHelper {
   using CalldataDecoder for bytes;

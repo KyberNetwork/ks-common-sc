@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/interfaces/IERC20.sol';
+import {CustomRevert} from 'src/libraries/CustomRevert.sol';
 
-import '../CustomRevert.sol';
+import {IERC20} from 'openzeppelin-contracts/contracts/interfaces/IERC20.sol';
 
 /// @title Library for transferring, approving and holding native tokens and ERC20 tokens
 /// @dev This library is based on CurrencyLibrary.sol from Uniswap/v4-core and SafeTransferLib.sol from transmissions11/solmate
