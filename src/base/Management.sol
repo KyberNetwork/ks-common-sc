@@ -11,19 +11,33 @@ abstract contract Management is AccessControl, Pausable {
     _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
   }
 
-  function batchGrantRole(bytes32 role, address[] calldata accounts)
+  /// @notice Batch grant roles to multiple accounts
+  /// @param role The role to grant
+  /// @param accounts The accounts to grant the role to
+  function batchGrantRole(bytes32 role, address[] memory accounts)
     external
     onlyRole(getRoleAdmin(role))
   {
+    _batchGrantRole(role, accounts);
+  }
+
+  function _batchGrantRole(bytes32 role, address[] memory accounts) internal {
     for (uint256 i = 0; i < accounts.length; i++) {
       _grantRole(role, accounts[i]);
     }
   }
 
-  function batchRevokeRole(bytes32 role, address[] calldata accounts)
+  /// @notice Batch revoke roles from multiple accounts
+  /// @param role The role to revoke
+  /// @param accounts The accounts to revoke the role from
+  function batchRevokeRole(bytes32 role, address[] memory accounts)
     external
     onlyRole(getRoleAdmin(role))
   {
+    _batchRevokeRole(role, accounts);
+  }
+
+  function _batchRevokeRole(bytes32 role, address[] memory accounts) internal {
     for (uint256 i = 0; i < accounts.length; i++) {
       _revokeRole(role, accounts[i]);
     }
