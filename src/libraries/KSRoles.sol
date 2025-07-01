@@ -10,5 +10,5 @@ library KSRoles {
   bytes32 internal constant GUARDIAN_ROLE = keccak256('GUARDIAN_ROLE');
 
   /// @notice Role for the rescuers
-  bytes32 internal constant RESCUE_ROLE = keccak256('RESCUE_ROLE');
+  bytes32 internal constant RESCUER_ROLE = keccak256('RESCUER_ROLE');
 }

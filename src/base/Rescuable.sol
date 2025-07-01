@@ -17,7 +17,7 @@ abstract contract Rescuable is IRescuable, AccessControl, Common {
   /// @inheritdoc IRescuable
   function rescueERC20s(address[] calldata tokens, uint256[] memory amounts, address recipient)
     external
-    onlyRole(KSRoles.RESCUE_ROLE)
+    onlyRole(KSRoles.RESCUER_ROLE)
     checkAddress(recipient)
     checkLengths(tokens.length, amounts.length)
   {
@@ -31,7 +31,7 @@ abstract contract Rescuable is IRescuable, AccessControl, Common {
   /// @inheritdoc IRescuable
   function rescueERC721s(IERC721[] calldata tokens, uint256[] calldata tokenIds, address recipient)
     external
-    onlyRole(KSRoles.RESCUE_ROLE)
+    onlyRole(KSRoles.RESCUER_ROLE)
     checkAddress(recipient)
     checkLengths(tokens.length, tokenIds.length)
   {
@@ -50,7 +50,7 @@ abstract contract Rescuable is IRescuable, AccessControl, Common {
     address recipient
   )
     external
-    onlyRole(KSRoles.RESCUE_ROLE)
+    onlyRole(KSRoles.RESCUER_ROLE)
     checkAddress(recipient)
     checkLengths(tokens.length, tokenIds.length)
     checkLengths(tokens.length, amounts.length)
