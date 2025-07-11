@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-
 import {IERC1155} from 'openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol';
 import {IERC721} from 'openzeppelin-contracts/contracts/token/ERC721/IERC721.sol';
 
-interface IRescuable {
+interface IManagement {
   /// @notice Emitted when some of ERC20 tokens are rescued
   event RescueERC20s(address[] tokens, uint256[] amounts, address recipient);
 
@@ -14,6 +13,22 @@ interface IRescuable {
 
   /// @notice Emitted when some of ERC1155 tokens are rescued
   event RescueERC1155s(IERC1155[] tokens, uint256[] tokenIds, uint256[] amounts, address recipient);
+
+  /// @notice Batch grant roles to multiple accounts
+  /// @param role The role to grant
+  /// @param accounts The accounts to grant the role to
+  function batchGrantRole(bytes32 role, address[] memory accounts) external;
+
+  /// @notice Batch revoke roles from multiple accounts
+  /// @param role The role to revoke
+  /// @param accounts The accounts to revoke the role from
+  function batchRevokeRole(bytes32 role, address[] memory accounts) external;
+
+  /// @notice Pause the contract
+  function pause() external;
+
+  /// @notice Unpause the contract
+  function unpause() external;
 
   /**
    * @notice Rescue some of ERC20 tokens stuck in the contract
