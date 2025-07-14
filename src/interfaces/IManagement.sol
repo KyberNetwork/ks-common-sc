@@ -14,6 +14,11 @@ interface IManagement {
   /// @notice Emitted when some of ERC1155 tokens are rescued
   event RescueERC1155s(IERC1155[] tokens, uint256[] tokenIds, uint256[] amounts, address recipient);
 
+  /// @notice Transfer {defaultAdmin} to a new account
+  /// @dev Mimics the {Ownable-transferOwnership} function
+  /// @param newOwner The new {defaultAdmin}
+  function transferOwnership(address newOwner) external;
+
   /// @notice Batch grant roles to multiple accounts
   /// @param role The role to grant
   /// @param accounts The accounts to grant the role to

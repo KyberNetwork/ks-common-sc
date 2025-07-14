@@ -13,7 +13,7 @@ import {IERC1155} from 'openzeppelin-contracts/contracts/token/ERC1155/IERC1155.
 import {IERC721} from 'openzeppelin-contracts/contracts/token/ERC721/IERC721.sol';
 import {Pausable} from 'openzeppelin-contracts/contracts/utils/Pausable.sol';
 
-abstract contract Management is AccessControlDefaultAdminRules, Pausable, Common, IManagement {
+contract Management is AccessControlDefaultAdminRules, Pausable, Common, IManagement {
   using TokenHelper for address;
 
   modifier onlyRoleOrDefaultAdmin(bytes32 role) {
@@ -30,6 +30,12 @@ abstract contract Management is AccessControlDefaultAdminRules, Pausable, Common
   // ================================
   // ===== Role Management ==========
   // ================================
+
+  /// @inheritdoc IManagement
+  function transferOwnership(address newOwner) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    _revokeRole(DEFAULT_ADMIN_ROLE, _msgSender());
+    _grantRole(DEFAULT_ADMIN_ROLE, newOwner);
+  }
 
   /// @inheritdoc IManagement
   function batchGrantRole(bytes32 role, address[] memory accounts)

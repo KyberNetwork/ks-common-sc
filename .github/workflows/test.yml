@@ -1,27 +1,29 @@
-name: test
+name: Forge Test
 
 on:
   push:
+    branches:
+      - main
   pull_request:
-  workflow_dispatch:
 
 jobs:
-  test:
-    name: Foundry test
-    runs-on: self-hosted
+  forge-test:
+    name: Forge Test
+    runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out Git repository
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
       - name: Install Foundry
-        uses: KyberNetwork/foundry-toolchain@master
+        uses: foundry-rs/foundry-toolchain@v1
 
-      - name: Show Forge version
-        run: |
-          forge --version
+      - name: Run Forge build
+        run: forge build src --sizes
+        id: build
 
       - name: Run Forge test
-        run: |
-          forge test --isolate
+        run: forge test --isolate
         id: test

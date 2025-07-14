@@ -1,27 +1,25 @@
-name: lint
+name: Forge Lint
 
 on:
   push:
+    branches:
+      - main
   pull_request:
-  workflow_dispatch:
 
 jobs:
-  lint:
-    name: Foundry lint
-    runs-on: self-hosted
+  forge-lint:
+    name: Forge Lint
+    runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - name: Check out Git repository
+        uses: actions/checkout@v4
 
       - name: Install Foundry
-        uses: KyberNetwork/foundry-toolchain@master
+        uses: foundry-rs/foundry-toolchain@v1
 
       - name: Show Forge version
-        run: |
-          forge --version
+        run: forge --version
 
       - name: Run Forge fmt
-        run: |
-          forge fmt --check
-        id: fmt
+        run: forge fmt --check
