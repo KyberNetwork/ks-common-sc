@@ -3,7 +3,8 @@ pragma solidity ^0.8.0;
 
 import 'forge-std/Test.sol';
 
-import 'src/base/Management.sol';
+import 'src/base/ManagementPausable.sol';
+import 'src/base/ManagementRescuable.sol';
 import 'src/libraries/token/TokenHelper.sol';
 
 import 'openzeppelin-contracts/contracts/mocks/token/ERC20Mock.sol';
@@ -15,6 +16,10 @@ contract ERC721Mock is ERC721 {
   function mint(address to, uint256 tokenId) public {
     _mint(to, tokenId);
   }
+}
+
+contract Management is ManagementRescuable, ManagementPausable {
+  constructor(uint48 initialDelay, address initialAdmin) ManagementBase(initialDelay, initialAdmin) {}
 }
 
 contract ManagementTest is Test {
@@ -67,6 +72,25 @@ contract ManagementTest is Test {
   }
 
   /// forge-config: default.fuzz.runs = 20
+  function test_rescueNative(uint256 dealAmount, uint256 rescueAmount, address recipient) public {
+    vm.assume(recipient != address(0));
+    vm.assume(recipient != address(management));
+    vm.assume(recipient != address(this));
+    vm.assume(recipient != address(vm));
+
+    address[] memory tokens = new address[](1);
+    tokens[0] = TokenHelper.NATIVE_ADDRESS;
+
+    vm.deal(address(management), dealAmount);
+    rescueAmount = rescueAmount % 2 == 0 ? 0 : bound(rescueAmount, 0, dealAmount);
+
+    vm.prank(admin);
+    management.rescueERC20s(tokens, toDynamicArray(rescueAmount), recipient);
+
+    assertEq(recipient.balance, rescueAmount == 0 ? dealAmount : rescueAmount);
+  }
+
+  /// forge-config: default.fuzz.runs = 20
   function test_rescueERC721s(uint256[5] memory tokenIds, address recipient) public {
     vm.assume(recipient != address(0));
     vm.assume(recipient != address(management));
@@ -84,6 +108,12 @@ contract ManagementTest is Test {
     for (uint256 i = 0; i < tokens.length; i++) {
       assertEq(tokens[i].ownerOf(tokenIds[i]), recipient);
     }
+  }
+
+  function toDynamicArray(uint256 value) internal pure returns (uint256[] memory) {
+    uint256[] memory dynamicArr = new uint256[](1);
+    dynamicArr[0] = value;
+    return dynamicArr;
   }
 
   function toDynamicArray(uint256[5] memory arr) internal pure returns (uint256[] memory) {

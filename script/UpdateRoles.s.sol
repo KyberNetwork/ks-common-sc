@@ -3,11 +3,11 @@ pragma solidity ^0.8.0;
 
 import 'script/Base.s.sol';
 
-import {Management} from 'src/base/Management.sol';
+import {ManagementBase} from 'src/base/ManagementBase.sol';
 
 contract UpdateRolesScript is BaseScript {
   function run(
-    Management management,
+    ManagementBase management,
     string calldata roleName,
     address[] calldata accounts,
     bool isGrant
