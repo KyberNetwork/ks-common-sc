@@ -5,20 +5,15 @@ pragma solidity ^0.8.0;
 import {CustomRevert} from 'src/libraries/CustomRevert.sol';
 import {CalldataDecoder} from 'src/libraries/calldata/CalldataDecoder.sol';
 
-import {IDaiLikePermit} from 'src/interfaces/IDaiLikePermit.sol';
-import {IPermit2} from 'src/interfaces/IPermit2.sol';
-
 import {IERC20Permit} from
   'openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol';
+import {IDaiLikePermit} from 'src/interfaces/IDaiLikePermit.sol';
 
 library PermitHelper {
   using CalldataDecoder for bytes;
 
   /// @notice Additional context for ERC-7751 wrapped error when permit fails
   error PermitFailed();
-
-  /// @notice Additional context for ERC-7751 wrapped error when permit2 fails
-  error Permit2Failed();
 
   function permit(address token, bytes calldata permitData) internal returns (bool success) {
     if (permitData.length == 32 * 5) {
@@ -27,30 +22,6 @@ library PermitHelper {
       success = _callPermit(token, IDaiLikePermit.permit.selector, permitData);
     } else {
       return false;
-    }
-  }
-
-  function permit2(IPermit2 _permit2, address token, bytes calldata permitData)
-    internal
-    returns (bool success)
-  {
-    if (permitData.length <= 32 * 6) {
-      return false;
-    }
-
-    IPermit2.PermitSingle calldata permitSingle;
-    assembly {
-      permitSingle := permitData.offset
-    }
-    bytes calldata signature = permitData.decodeBytes(6);
-
-    bytes memory data = abi.encodeCall(IPermit2.permit, (msg.sender, permitSingle, signature));
-    assembly ("memory-safe") {
-      success := call(gas(), _permit2, 0, add(data, 0x20), mload(data), 0, 0)
-    }
-
-    if (!success) {
-      CustomRevert.bubbleUpAndRevertWith(token, IPermit2.permit.selector, Permit2Failed.selector);
     }
   }
 

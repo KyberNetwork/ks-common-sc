@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-/// @notice Interface for Permit2
+/// @title AllowanceTransfer
+/// @notice Handles ERC20 token permissions through signature based allowance setting and ERC20 token transfers by checking allowed amounts
+/// @dev Requires user's token approval on the Permit2 contract
 interface IPermit2 {
   /// @notice The permit data for a token
   struct PermitDetails {
@@ -15,14 +17,22 @@ interface IPermit2 {
     uint48 nonce;
   }
 
-  /// @notice The permit message signed for a single token allowance
-  struct PermitSingle {
-    // the permit data for a single token alownce
-    PermitDetails details;
+  /// @notice The permit message signed for multiple token allowances
+  struct PermitBatch {
+    // the permit data for multiple token allowances
+    PermitDetails[] details;
     // address permissioned on the allowed tokens
     address spender;
     // deadline on the permit signature
     uint256 sigDeadline;
+  }
+
+  /// @notice A token spender pair.
+  struct TokenSpenderPair {
+    // the token the spender is approved
+    address token;
+    // the spender address
+    address spender;
   }
 
   /// @notice Details for a token transfer.
@@ -37,13 +47,12 @@ interface IPermit2 {
     address token;
   }
 
-  /// @notice Permit a spender to a given amount of the owners token via the owner's EIP-712 signature
+  /// @notice Permit a spender to the signed amounts of the owners tokens via the owner's EIP-712 signature
   /// @dev May fail if the owner's nonce was invalidated in-flight by invalidateNonce
   /// @param owner The owner of the tokens being approved
-  /// @param permitSingle Data signed over by the owner specifying the terms of approval
+  /// @param permitBatch Data signed over by the owner specifying the terms of approval
   /// @param signature The owner's signature over the permit data
-  function permit(address owner, PermitSingle memory permitSingle, bytes calldata signature)
-    external;
+  function permit(address owner, PermitBatch memory permitBatch, bytes calldata signature) external;
 
   /// @notice Transfer approved tokens in a batch
   /// @param transferDetails Array of owners, recipients, amounts, and tokens for the transfers

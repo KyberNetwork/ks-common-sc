@@ -79,7 +79,7 @@ contract Management is AccessControlDefaultAdminRules, Pausable, Common, IManage
   }
 
   /// @inheritdoc IManagement
-  function unpause() external onlyRoleOrDefaultAdmin(KSRoles.GUARDIAN_ROLE) {
+  function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) {
     _unpause();
   }
 
@@ -120,6 +120,7 @@ contract Management is AccessControlDefaultAdminRules, Pausable, Common, IManage
     IERC1155[] calldata tokens,
     uint256[] calldata tokenIds,
     uint256[] calldata amounts,
+    bytes[] calldata datas,
     address recipient
   )
     external
@@ -127,9 +128,10 @@ contract Management is AccessControlDefaultAdminRules, Pausable, Common, IManage
     checkAddress(recipient)
     checkLengths(tokens.length, tokenIds.length)
     checkLengths(tokens.length, amounts.length)
+    checkLengths(tokens.length, datas.length)
   {
     for (uint256 i = 0; i < tokens.length; i++) {
-      _transferERC1155(tokens[i], tokenIds[i], amounts[i], recipient);
+      _transferERC1155(tokens[i], tokenIds[i], amounts[i], datas[i], recipient);
     }
 
     emit RescueERC1155s(tokens, tokenIds, amounts, recipient);
@@ -147,12 +149,16 @@ contract Management is AccessControlDefaultAdminRules, Pausable, Common, IManage
     return amount;
   }
 
-  function _transferERC1155(IERC1155 token, uint256 tokenId, uint256 amount, address recipient)
-    internal
-  {
+  function _transferERC1155(
+    IERC1155 token,
+    uint256 tokenId,
+    uint256 amount,
+    bytes memory data,
+    address recipient
+  ) internal {
     if (amount == 0) {
       amount = token.balanceOf(address(this), tokenId);
     }
-    token.safeTransferFrom(address(this), recipient, tokenId, amount, '');
+    token.safeTransferFrom(address(this), recipient, tokenId, amount, data);
   }
 }

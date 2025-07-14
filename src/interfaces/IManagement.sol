@@ -61,12 +61,14 @@ interface IManagement {
    * @param tokens the addresses of the tokens to rescue
    * @param tokenIds the IDs of the tokens to rescue
    * @param amounts the amounts of the tokens to rescue, set to 0 to rescue all
+   * @param datas additional data to `safeTransferFrom`
    * @param recipient the address to send the tokens to
    */
   function rescueERC1155s(
     IERC1155[] calldata tokens,
     uint256[] calldata tokenIds,
     uint256[] calldata amounts,
+    bytes[] calldata datas,
     address recipient
   ) external;
 }
