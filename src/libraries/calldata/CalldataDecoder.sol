@@ -15,13 +15,25 @@ library CalldataDecoder {
   /// @notice equivalent to SliceOutOfBounds.selector, stored in least-significant bits
   uint256 constant SLICE_ERROR_SELECTOR = 0x3b99b53d;
 
-  function decodeAddress(bytes calldata data) internal pure returns (address addr) {
+  function decodeAddress(bytes calldata data) internal pure returns (address value) {
     assembly ("memory-safe") {
-      addr := calldataload(data.offset)
+      value := calldataload(data.offset)
     }
   }
 
   function decodeUint256(bytes calldata data) internal pure returns (uint256 value) {
+    assembly ("memory-safe") {
+      value := calldataload(data.offset)
+    }
+  }
+
+  function decodeBool(bytes calldata data) internal pure returns (bool value) {
+    assembly ("memory-safe") {
+      value := calldataload(data.offset)
+    }
+  }
+
+  function decodeBytes32(bytes calldata data) internal pure returns (bytes32 value) {
     assembly ("memory-safe") {
       value := calldataload(data.offset)
     }
