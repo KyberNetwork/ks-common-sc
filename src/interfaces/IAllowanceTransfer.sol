@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 /// @title AllowanceTransfer
 /// @notice Handles ERC20 token permissions through signature based allowance setting and ERC20 token transfers by checking allowed amounts
 /// @dev Requires user's token approval on the Permit2 contract
-interface IPermit2 {
+interface IAllowanceTransfer {
   /// @notice The permit data for a token
   struct PermitDetails {
     // ERC20 token address
