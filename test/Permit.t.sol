@@ -18,7 +18,7 @@ contract MockERC20Permit is IERC20Permit, IDaiLikePermit {
     uint8 v,
     bytes32 r,
     bytes32 s
-  ) pure external {
+  ) external pure {
     require(owner != address(0), 'Invalid owner');
     require(spender != address(0), 'Invalid spender');
     require(value != 0, 'Invalid value');
@@ -41,7 +41,7 @@ contract MockERC20Permit is IERC20Permit, IDaiLikePermit {
     uint8 v,
     bytes32 r,
     bytes32 s
-  ) pure external {
+  ) external pure {
     require(holder != address(0), 'Invalid holder');
     require(spender != address(0), 'Invalid spender');
     require(nonce != 0, 'Invalid nonce');
