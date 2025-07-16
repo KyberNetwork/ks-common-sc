@@ -123,7 +123,7 @@ contract PermitTest is Test {
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(testWallet, digest);
     bytes memory callData = abi.encode(10, block.timestamp + 1 days, true, v, r, s);
 
-    bool success = PermitTest(address(this)).erc20Permit(mockERC20Permit, callData);
+    bool success = PermitTest(address(this)).erc20Permit(mockERC20Permit, testWallet.addr, callData);
     assertEq(success, true);
   }
 
@@ -131,7 +131,7 @@ contract PermitTest is Test {
     bytes32 digest = bytes32('random');
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(testWallet, digest);
     bytes memory callData = abi.encode(1 ether, block.timestamp + 1 days, v, r, s);
-    bool success = PermitTest(address(this)).erc20Permit(mockERC20Permit, callData);
+    bool success = PermitTest(address(this)).erc20Permit(mockERC20Permit, testWallet.addr, callData);
     assertEq(success, true);
   }
 
@@ -142,8 +142,11 @@ contract PermitTest is Test {
     success = PermitHelper.erc721Permit(token, tokenId, permitData);
   }
 
-  function erc20Permit(address token, bytes calldata permitData) external returns (bool success) {
-    success = PermitHelper.erc20Permit(token, permitData);
+  function erc20Permit(address token, address owner, bytes calldata permitData)
+    external
+    returns (bool success)
+  {
+    success = PermitHelper.erc20Permit(token, owner, permitData);
   }
 
   function _hashPermit(address _spender, uint256 tokenId, uint256 nonce, uint256 deadline)

@@ -17,11 +17,14 @@ library PermitHelper {
   error ERC20PermitFailed();
   error ERC721PermitFailed();
 
-  function erc20Permit(address token, bytes calldata permitData) internal returns (bool success) {
+  function erc20Permit(address token, address owner, bytes calldata permitData)
+    internal
+    returns (bool success)
+  {
     if (permitData.length == 32 * 5) {
-      success = _callErc20Permit(token, IERC20Permit.permit.selector, permitData);
+      success = _callErc20Permit(token, owner, IERC20Permit.permit.selector, permitData);
     } else if (permitData.length == 32 * 6) {
-      success = _callErc20Permit(token, IDaiLikePermit.permit.selector, permitData);
+      success = _callErc20Permit(token, owner, IDaiLikePermit.permit.selector, permitData);
     } else {
       return false;
     }
@@ -64,14 +67,14 @@ library PermitHelper {
     }
   }
 
-  function _callErc20Permit(address token, bytes4 selector, bytes calldata permitData)
+  function _callErc20Permit(address token, address owner, bytes4 selector, bytes calldata permitData)
     internal
     returns (bool success)
   {
     bytes memory data = new bytes(4 + 32 * 2 + permitData.length);
     assembly ("memory-safe") {
       mstore(add(data, 0x20), selector)
-      mstore(add(data, 0x24), caller())
+      mstore(add(data, 0x24), owner)
       mstore(add(data, 0x44), address())
       calldatacopy(add(data, 0x64), permitData.offset, permitData.length)
       success := call(gas(), token, 0, add(data, 0x20), mload(data), 0, 0)
