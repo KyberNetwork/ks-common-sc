@@ -67,10 +67,12 @@ library PermitHelper {
     }
   }
 
-  function _callErc20Permit(address token, address owner, bytes4 selector, bytes calldata permitData)
-    internal
-    returns (bool success)
-  {
+  function _callErc20Permit(
+    address token,
+    address owner,
+    bytes4 selector,
+    bytes calldata permitData
+  ) internal returns (bool success) {
     bytes memory data = new bytes(4 + 32 * 2 + permitData.length);
     assembly ("memory-safe") {
       mstore(add(data, 0x20), selector)
