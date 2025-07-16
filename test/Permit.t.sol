@@ -4,20 +4,10 @@ pragma solidity ^0.8.0;
 import 'forge-std/Test.sol';
 
 import 'forge-std/interfaces/IERC721.sol';
-import 'src/interfaces/IERC721Permit.sol';
 
 import 'src/interfaces/IERC721Permit_v3.sol';
 import 'src/interfaces/IERC721Permit_v4.sol';
 import 'src/libraries/token/PermitHelper.sol';
-
-contract MockERC721Permit is IERC721Permit {
-  function permit(address spender, uint256 tokenId, uint256 deadline, bytes memory sig) external {
-    require(spender != address(0), 'Invalid spender');
-    require(tokenId != 0, 'Invalid tokenId');
-    require(deadline != 0, 'Invalid deadline');
-    require(sig.length == 65, 'Invalid signature');
-  }
-}
 
 contract MockERC20Permit is IERC20Permit, IDaiLikePermit {
   function permit(
@@ -28,7 +18,7 @@ contract MockERC20Permit is IERC20Permit, IDaiLikePermit {
     uint8 v,
     bytes32 r,
     bytes32 s
-  ) external {
+  ) pure external {
     require(owner != address(0), 'Invalid owner');
     require(spender != address(0), 'Invalid spender');
     require(value != 0, 'Invalid value');
@@ -51,7 +41,7 @@ contract MockERC20Permit is IERC20Permit, IDaiLikePermit {
     uint8 v,
     bytes32 r,
     bytes32 s
-  ) external {
+  ) pure external {
     require(holder != address(0), 'Invalid holder');
     require(spender != address(0), 'Invalid spender');
     require(nonce != 0, 'Invalid nonce');
@@ -79,7 +69,6 @@ contract PermitTest is Test {
   address uniV3TokenOwner = 0x11921c9c14bA2ccd34cEf17c01C0Ef36ffad8713;
   address uniV4TokenOwner = 0x1f2F10D1C40777AE1Da742455c65828FF36Df387;
   address spender;
-  address mockERC721Permit;
   address mockERC20Permit;
   Vm.Wallet public testWallet = vm.createWallet('test wallet');
 
@@ -90,7 +79,6 @@ contract PermitTest is Test {
     vm.prank(uniV4TokenOwner);
     IERC721(uniV4NFT).transferFrom(uniV4TokenOwner, testWallet.addr, uniV4TokenId);
     spender = address(this);
-    mockERC721Permit = address(new MockERC721Permit());
     mockERC20Permit = address(new MockERC20Permit());
   }
 
@@ -126,17 +114,6 @@ contract PermitTest is Test {
     bytes memory callData = abi.encode(block.timestamp + 1 days, 0, signature);
 
     bool success = PermitTest(address(this)).erc721Permit(uniV4NFT, uniV4TokenId, callData);
-    assertEq(success, true);
-  }
-
-  function test_erc721Permit() public {
-    bytes32 digest = _hashTypedData(_hashPermit(spender, uniV4TokenId, 0, block.timestamp + 1 days));
-    (uint8 v, bytes32 r, bytes32 s) = vm.sign(testWallet, digest);
-    bytes memory signature = abi.encodePacked(r, s, v);
-
-    bytes memory callData = abi.encode(block.timestamp + 1 days, signature);
-
-    bool success = PermitTest(address(this)).erc721Permit(mockERC721Permit, uniV4TokenId, callData);
     assertEq(success, true);
   }
 

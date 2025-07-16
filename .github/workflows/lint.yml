@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
 
+env:
+  ETH_NODE_URL: ${{ secrets.ETH_NODE_URL }}
+
 jobs:
   forge-lint:
     name: Forge Lint

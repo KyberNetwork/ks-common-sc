@@ -9,7 +9,6 @@ import {console} from 'forge-std/console.sol';
 import {IERC20Permit} from
   'openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol';
 import {IDaiLikePermit} from 'src/interfaces/IDaiLikePermit.sol';
-import {IERC721Permit} from 'src/interfaces/IERC721Permit.sol';
 import {IERC721Permit_v3} from 'src/interfaces/IERC721Permit_v3.sol';
 import {IERC721Permit_v4} from 'src/interfaces/IERC721Permit_v4.sol';
 
@@ -17,7 +16,8 @@ library PermitHelper {
   using CalldataDecoder for bytes;
 
   /// @notice Additional context for ERC-7751 wrapped error when permit fails
-  error PermitFailed();
+  error ERC20PermitFailed();
+  error ERC721PermitFailed();
 
   function erc20Permit(address token, bytes calldata permitData) internal returns (bool success) {
     if (permitData.length == 32 * 5) {
@@ -35,8 +35,6 @@ library PermitHelper {
   {
     if (permitData.length == 32 * 4) {
       success = _callErc721Permit(token, tokenId, IERC721Permit_v3.permit.selector, permitData, 0);
-    } else if (permitData.length == 32 * 6) {
-      success = _callErc721Permit(token, tokenId, IERC721Permit.permit.selector, permitData, 0x80);
     } else if (permitData.length == 32 * 7) {
       success =
         _callErc721Permit(token, tokenId, IERC721Permit_v4.permit.selector, permitData, 0xa0);
@@ -64,7 +62,7 @@ library PermitHelper {
     }
 
     if (!success) {
-      CustomRevert.bubbleUpAndRevertWith(token, selector, PermitFailed.selector);
+      CustomRevert.bubbleUpAndRevertWith(token, selector, ERC721PermitFailed.selector);
     }
   }
 
@@ -82,7 +80,7 @@ library PermitHelper {
     }
 
     if (!success) {
-      CustomRevert.bubbleUpAndRevertWith(token, selector, PermitFailed.selector);
+      CustomRevert.bubbleUpAndRevertWith(token, selector, ERC20PermitFailed.selector);
     }
   }
 }
