@@ -5,9 +5,13 @@ pragma solidity ^0.8.0;
 import {CustomRevert} from 'src/libraries/CustomRevert.sol';
 import {CalldataDecoder} from 'src/libraries/calldata/CalldataDecoder.sol';
 
+import {console} from 'forge-std/console.sol';
 import {IERC20Permit} from
   'openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol';
 import {IDaiLikePermit} from 'src/interfaces/IDaiLikePermit.sol';
+import {IERC721Permit} from 'src/interfaces/IERC721Permit.sol';
+import {IERC721Permit_v3} from 'src/interfaces/IERC721Permit_v3.sol';
+import {IERC721Permit_v4} from 'src/interfaces/IERC721Permit_v4.sol';
 
 library PermitHelper {
   using CalldataDecoder for bytes;
@@ -15,17 +19,56 @@ library PermitHelper {
   /// @notice Additional context for ERC-7751 wrapped error when permit fails
   error PermitFailed();
 
-  function permit(address token, bytes calldata permitData) internal returns (bool success) {
+  function erc20Permit(address token, bytes calldata permitData) internal returns (bool success) {
     if (permitData.length == 32 * 5) {
-      success = _callPermit(token, IERC20Permit.permit.selector, permitData);
+      success = _callErc20Permit(token, IERC20Permit.permit.selector, permitData);
     } else if (permitData.length == 32 * 6) {
-      success = _callPermit(token, IDaiLikePermit.permit.selector, permitData);
+      success = _callErc20Permit(token, IDaiLikePermit.permit.selector, permitData);
     } else {
       return false;
     }
   }
 
-  function _callPermit(address token, bytes4 selector, bytes calldata permitData)
+  function erc721Permit(address token, uint256 tokenId, bytes calldata permitData)
+    internal
+    returns (bool success)
+  {
+    if (permitData.length == 32 * 4) {
+      success = _callErc721Permit(token, tokenId, IERC721Permit_v3.permit.selector, permitData, 0);
+    } else if (permitData.length == 32 * 6) {
+      success = _callErc721Permit(token, tokenId, IERC721Permit.permit.selector, permitData, 0x80);
+    } else if (permitData.length == 32 * 7) {
+      success =
+        _callErc721Permit(token, tokenId, IERC721Permit_v4.permit.selector, permitData, 0xa0);
+    } else {
+      return false;
+    }
+  }
+
+  function _callErc721Permit(
+    address token,
+    uint256 tokenId,
+    bytes4 selector,
+    bytes calldata permitData,
+    uint256 overrideSigOffset
+  ) internal returns (bool success) {
+    bytes memory data = new bytes(4 + 32 * 2 + permitData.length);
+    assembly ("memory-safe") {
+      mstore(add(data, 0x20), selector)
+      mstore(add(data, 0x24), address())
+      mstore(add(data, 0x44), tokenId)
+      calldatacopy(add(data, 0x64), permitData.offset, permitData.length)
+      // override the signature offset in case dynamic bytes
+      if overrideSigOffset { mstore(add(data, add(overrideSigOffset, 4)), overrideSigOffset) }
+      success := call(gas(), token, 0, add(data, 0x20), mload(data), 0, 0)
+    }
+
+    if (!success) {
+      CustomRevert.bubbleUpAndRevertWith(token, selector, PermitFailed.selector);
+    }
+  }
+
+  function _callErc20Permit(address token, bytes4 selector, bytes calldata permitData)
     internal
     returns (bool success)
   {
