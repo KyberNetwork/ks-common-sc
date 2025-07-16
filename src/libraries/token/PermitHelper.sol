@@ -54,7 +54,7 @@ library PermitHelper {
       mstore(add(data, 0x24), address())
       mstore(add(data, 0x44), tokenId)
       calldatacopy(add(data, 0x64), permitData.offset, permitData.length)
-      // override the signature offset in case dynamic bytes
+      // override the signature offset in case dynamic bytes (65 bytes length)
       if overrideSigOffset { mstore(add(data, add(overrideSigOffset, 4)), overrideSigOffset) }
       success := call(gas(), token, 0, add(data, 0x20), mload(data), 0, 0)
     }
