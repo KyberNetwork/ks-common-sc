@@ -6,6 +6,7 @@ on:
       - main
   pull_request:
 
+
 jobs:
   forge-lint:
     name: Forge Lint
