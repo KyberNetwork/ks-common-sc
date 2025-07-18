@@ -2,9 +2,10 @@
 pragma solidity ^0.8.0;
 
 import {IManagementRescuable} from '../interfaces/IManagementRescuable.sol';
+
+import {KSRoles} from '../libraries/KSRoles.sol';
 import {TokenHelper} from '../libraries/token/TokenHelper.sol';
 import {ManagementBase} from './ManagementBase.sol';
-import {KSRoles} from 'src/libraries/KSRoles.sol';
 
 import {IERC1155} from 'openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol';
 import {IERC721} from 'openzeppelin-contracts/contracts/token/ERC721/IERC721.sol';
