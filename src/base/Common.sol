@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {ICommon} from 'src/interfaces/ICommon.sol';
+import {ICommon} from '../interfaces/ICommon.sol';
 
 contract Common is ICommon {
   modifier checkAddress(address addr) {

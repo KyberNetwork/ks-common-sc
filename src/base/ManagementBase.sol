@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Common} from 'src/base/Common.sol';
+import {Common} from './Common.sol';
 
-import {IManagementBase} from 'src/interfaces/IManagementBase.sol';
+import {IManagementBase} from '../interfaces/IManagementBase.sol';
 
 import {AccessControlDefaultAdminRules} from
   'openzeppelin-contracts/contracts/access/extensions/AccessControlDefaultAdminRules.sol';

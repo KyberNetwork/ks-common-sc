@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {CustomRevert} from 'src/libraries/CustomRevert.sol';
+import {CustomRevert} from '../CustomRevert.sol';
 
 import {IERC20} from 'openzeppelin-contracts/contracts/interfaces/IERC20.sol';
 
