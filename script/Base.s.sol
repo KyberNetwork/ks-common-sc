@@ -69,7 +69,7 @@ contract BaseScript is Script {
       return;
     }
     vm.serializeJson(key, _getJsonString(key));
-    vm.writeJson(key.serialize(dotChainId, value), string.concat(path, key, '.json'));
+    vm.writeJson(key.serialize(chainId, value), string.concat(path, key, '.json'));
   }
 
   function _readBool(string memory key) internal returns (bool result) {
