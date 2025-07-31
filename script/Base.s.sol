@@ -14,6 +14,8 @@ contract BaseScript is Script {
   event ReadAddress(string key, address result);
   event ReadBool(string key, bool result);
   event ReadAddressArray(string key, address[] result);
+  event ReadBytes(string key, bytes result);
+  event ReadBytesArray(string key, bytes[] result);
 
   event DeployContract(string key, address result);
 
@@ -43,7 +45,7 @@ contract BaseScript is Script {
 
   function _readAddress(string memory key) internal returns (address result) {
     string memory json = _getJsonString(key);
-    if (_configExists(json)) {
+    if (json.keyExists(dotChainId)) {
       result = json.readAddress(dotChainId);
     } else {
       result = json.readAddress('.0');
@@ -72,7 +74,7 @@ contract BaseScript is Script {
 
   function _readBool(string memory key) internal returns (bool result) {
     string memory json = _getJsonString(key);
-    if (_configExists(json)) {
+    if (json.keyExists(dotChainId)) {
       result = json.readBool(dotChainId);
     } else {
       result = json.readBool('.0');
@@ -81,9 +83,16 @@ contract BaseScript is Script {
     emit ReadBool(key, result);
   }
 
+  function _readBoolOr(string memory key, bool defaultValue) internal returns (bool result) {
+    string memory json = _getJsonString(key);
+    result = json.readBoolOr(dotChainId, defaultValue);
+
+    emit ReadBool(key, result);
+  }
+
   function _readAddressArray(string memory key) internal returns (address[] memory result) {
     string memory json = _getJsonString(key);
-    if (_configExists(json)) {
+    if (json.keyExists(dotChainId)) {
       result = json.readAddressArray(dotChainId);
     } else {
       result = json.readAddressArray('.0');
@@ -92,8 +101,56 @@ contract BaseScript is Script {
     emit ReadAddressArray(key, result);
   }
 
-  function _configExists(string memory json) internal view returns (bool) {
-    return json.keyExists(dotChainId);
+  function _readAddressArrayOr(string memory key, address[] memory defaultValue)
+    internal
+    returns (address[] memory result)
+  {
+    string memory json = _getJsonString(key);
+    result = json.readAddressArrayOr(dotChainId, defaultValue);
+
+    emit ReadAddressArray(key, result);
+  }
+
+  function _readBytes(string memory key) internal returns (bytes memory result) {
+    string memory json = _getJsonString(key);
+    if (json.keyExists(dotChainId)) {
+      result = json.readBytes(dotChainId);
+    } else {
+      result = json.readBytes('.0');
+    }
+
+    emit ReadBytes(key, result);
+  }
+
+  function _readBytesOr(string memory key, bytes memory defaultValue)
+    internal
+    returns (bytes memory result)
+  {
+    string memory json = _getJsonString(key);
+    result = json.readBytesOr(dotChainId, defaultValue);
+
+    emit ReadBytes(key, result);
+  }
+
+  function _readBytesArray(string memory key) internal returns (bytes[] memory result) {
+    string memory json = _getJsonString(key);
+    if (json.keyExists(dotChainId)) {
+      result = json.readBytesArray(dotChainId);
+    } else {
+      result = json.readBytesArray('.0');
+    }
+
+    emit ReadBytesArray(key, result);
+  }
+
+  function _readBytesArrayOr(string memory key, bytes[] memory defaultValue)
+    internal
+    returns (bytes[] memory result)
+  {
+    string memory json = _getJsonString(key);
+    result = json.readBytesArrayOr(dotChainId, defaultValue);
+
+    emit ReadBytesArray(key, result);
   }
 
   /**
