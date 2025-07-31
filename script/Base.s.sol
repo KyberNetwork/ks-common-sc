@@ -21,12 +21,14 @@ contract BaseScript is Script {
 
   string path;
   string chainId;
+  string dotChainId;
 
   address create3Deployer;
 
   function setUp() public virtual {
     path = string.concat(vm.projectRoot(), '/script/config/');
     chainId = vm.toString(block.chainid);
+    dotChainId = string.concat('.', chainId);
 
     create3Deployer = _readAddressOr('create3-deployer', DEFAULT_CREATE3_DEPLOYER);
   }
@@ -41,7 +43,11 @@ contract BaseScript is Script {
 
   function _readAddress(string memory key) internal returns (address result) {
     string memory json = _getJsonString(key);
-    result = json.readAddress(string.concat('.', chainId));
+    if (_configExists(json)) {
+      result = json.readAddress(dotChainId);
+    } else {
+      result = json.readAddress('.0');
+    }
 
     emit ReadAddress(key, result);
   }
@@ -51,7 +57,7 @@ contract BaseScript is Script {
     returns (address result)
   {
     string memory json = _getJsonString(key);
-    result = json.readAddressOr(string.concat('.', chainId), defaultValue);
+    result = json.readAddressOr(dotChainId, defaultValue);
 
     emit ReadAddress(key, result);
   }
@@ -61,21 +67,33 @@ contract BaseScript is Script {
       return;
     }
     vm.serializeJson(key, _getJsonString(key));
-    vm.writeJson(key.serialize(chainId, value), string.concat(path, key, '.json'));
+    vm.writeJson(key.serialize(dotChainId, value), string.concat(path, key, '.json'));
   }
 
   function _readBool(string memory key) internal returns (bool result) {
     string memory json = _getJsonString(key);
-    result = json.readBool(string.concat('.', chainId));
+    if (_configExists(json)) {
+      result = json.readBool(dotChainId);
+    } else {
+      result = json.readBool('.0');
+    }
 
     emit ReadBool(key, result);
   }
 
   function _readAddressArray(string memory key) internal returns (address[] memory result) {
     string memory json = _getJsonString(key);
-    result = json.readAddressArray(string.concat('.', chainId));
+    if (_configExists(json)) {
+      result = json.readAddressArray(dotChainId);
+    } else {
+      result = json.readAddressArray('.0');
+    }
 
     emit ReadAddressArray(key, result);
+  }
+
+  function _configExists(string memory json) internal view returns (bool) {
+    return json.keyExists(dotChainId);
   }
 
   /**
