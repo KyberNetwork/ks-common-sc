@@ -13,8 +13,9 @@ interface IKSGenericForwarder {
     external
     returns (bytes[] memory);
 
-  function forwardBatchValue(address[] calldata targets, bytes[] calldata data, uint256[] calldata value)
-    external
-    payable
-    returns (bytes[] memory);
+  function forwardBatchValue(
+    address[] calldata targets,
+    bytes[] calldata data,
+    uint256[] calldata value
+  ) external payable returns (bytes[] memory);
 }
