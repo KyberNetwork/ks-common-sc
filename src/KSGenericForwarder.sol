@@ -8,7 +8,7 @@ import {IERC1155Receiver} from 'openzeppelin-contracts/contracts/interfaces/IERC
 import {IERC721Receiver} from 'openzeppelin-contracts/contracts/interfaces/IERC721Receiver.sol';
 import {Address} from 'openzeppelin-contracts/contracts/utils/Address.sol';
 
-contract KSGenericForwarder is Common, IKSGenericForwarder {
+contract KSGenericForwarder is Common, IKSGenericForwarder, IERC1155Receiver, IERC721Receiver {
   using Address for address;
 
   receive() external payable {}
@@ -87,5 +87,10 @@ contract KSGenericForwarder is Common, IKSGenericForwarder {
     bytes calldata
   ) external pure returns (bytes4) {
     return IERC1155Receiver.onERC1155BatchReceived.selector;
+  }
+
+  function supportsInterface(bytes4 interfaceId) external pure returns (bool) {
+    return interfaceId == type(IERC1155Receiver).interfaceId
+      || interfaceId == type(IERC721Receiver).interfaceId;
   }
 }
