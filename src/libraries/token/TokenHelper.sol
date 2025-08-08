@@ -84,6 +84,8 @@ library TokenHelper {
   }
 
   function safeTransferFrom(address token, address from, address to, uint256 amount) internal {
+    if (amount == 0) return;
+
     bool success;
     assembly ("memory-safe") {
       // Get a pointer to some free memory.
