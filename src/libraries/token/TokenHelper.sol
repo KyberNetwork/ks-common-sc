@@ -20,7 +20,7 @@ library TokenHelper {
   address constant NATIVE_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
   function isNative(address token) internal pure returns (bool) {
-    return token == NATIVE_ADDRESS;
+    return token == NATIVE_ADDRESS || token == address(0);
   }
 
   function safeTransferNative(address to, uint256 amount) internal {
