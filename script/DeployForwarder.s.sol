@@ -5,7 +5,7 @@ import './Base.s.sol';
 import 'src/KSGenericForwarder.sol';
 
 contract DeployForwarderScript is BaseScript {
-  string salt = '';
+  string salt = '250813';
 
   function run() public {
     if (bytes(salt).length == 0) {
