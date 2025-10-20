@@ -9,184 +9,149 @@ import 'src/interfaces/IERC721Permit_v3.sol';
 import 'src/interfaces/IERC721Permit_v4.sol';
 import 'src/libraries/token/PermitHelper.sol';
 
-contract MockERC20Permit is IERC20Permit, IDaiLikePermit {
-  function permit(
-    address owner,
-    address spender,
-    uint256 value,
-    uint256 deadline,
-    uint8 v,
-    bytes32 r,
-    bytes32 s
-  ) external pure {
-    require(owner != address(0), 'Invalid owner');
-    require(spender != address(0), 'Invalid spender');
-    require(value != 0, 'Invalid value');
-    require(deadline != 0, 'Invalid deadline');
-    require(v != 0, 'Invalid v');
-    require(r != bytes32(0), 'Invalid r');
-    require(s != bytes32(0), 'Invalid s');
-  }
-
-  function DOMAIN_SEPARATOR() external view returns (bytes32) {}
-
-  function nonces(address owner) external view returns (uint256) {}
-
-  function permit(
-    address holder,
-    address spender,
-    uint256 nonce,
-    uint256 expiry,
-    bool allowed,
-    uint8 v,
-    bytes32 r,
-    bytes32 s
-  ) external pure {
-    require(holder != address(0), 'Invalid holder');
-    require(spender != address(0), 'Invalid spender');
-    require(nonce != 0, 'Invalid nonce');
-    require(expiry != 0, 'Invalid expiry');
-    require(allowed, 'Invalid allowed');
-    require(v != 0, 'Invalid v');
-    require(r != bytes32(0), 'Invalid r');
-    require(s != bytes32(0), 'Invalid s');
-  }
-}
+import 'openzeppelin-contracts/contracts/utils/Nonces.sol';
+import 'openzeppelin-contracts/contracts/utils/cryptography/MessageHashUtils.sol';
 
 contract PermitTest is Test {
-  using PermitHelper for address;
-
-  string ETH_RPC_URL = vm.envString('ETH_NODE_URL');
-  uint256 constant FORK_BLOCK = 22_930_000;
+  using PermitHelper for *;
 
   bytes32 constant PERMIT_TYPEHASH =
     0x49ecf333e5b8c95c40fdafc95c1ad136e8914a8fb55e9dc8bb01eaa83a2df9ad;
 
-  address uniV3NFT = 0xC36442b4a4522E871399CD717aBDD847Ab11FE88;
-  address uniV4NFT = 0xbD216513d74C8cf14cf4747E6AaA6420FF64ee9e;
-  uint256 uniV3TokenId = 11;
-  uint256 uniV4TokenId = 36_880;
-  address uniV3TokenOwner = 0x11921c9c14bA2ccd34cEf17c01C0Ef36ffad8713;
-  address uniV4TokenOwner = 0x1f2F10D1C40777AE1Da742455c65828FF36Df387;
-  address spender;
-  address mockERC20Permit;
+  IAllowanceTransfer permit2 = IAllowanceTransfer(0x000000000022D473030F116dDEE9F6B43aC78BA3);
+
+  address DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+  address USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+
+  address uniswapV3NFT = 0xC36442b4a4522E871399CD717aBDD847Ab11FE88;
+  uint256 uniswapV3TokenId = 11;
+
+  address uniswapV4NFT = 0xbD216513d74C8cf14cf4747E6AaA6420FF64ee9e;
+  uint256 uniswapV4TokenId = 36_880;
+
   Vm.Wallet public testWallet = vm.createWallet('test wallet');
 
   function setUp() public {
-    vm.createSelectFork(ETH_RPC_URL, FORK_BLOCK);
-    vm.prank(uniV3TokenOwner);
-    IERC721(uniV3NFT).transferFrom(uniV3TokenOwner, testWallet.addr, uniV3TokenId);
-    vm.prank(uniV4TokenOwner);
-    IERC721(uniV4NFT).transferFrom(uniV4TokenOwner, testWallet.addr, uniV4TokenId);
-    spender = address(this);
-    mockERC20Permit = address(new MockERC20Permit());
+    vm.createSelectFork(vm.envString('ETH_NODE_URL'), 22_930_000);
+
+    address owner = IERC721(uniswapV3NFT).ownerOf(uniswapV3TokenId);
+    vm.prank(owner);
+    IERC721(uniswapV3NFT).transferFrom(owner, testWallet.addr, uniswapV3TokenId);
+
+    owner = IERC721(uniswapV4NFT).ownerOf(uniswapV4TokenId);
+    vm.prank(owner);
+    IERC721(uniswapV4NFT).transferFrom(owner, testWallet.addr, uniswapV4TokenId);
   }
 
   /* ========== ERC721 PERMIT TESTS ========== */
-  function test_uniV3Permit() public {
-    bytes32 digest = keccak256(
-      abi.encodePacked(
-        '\x19\x01',
-        IERC721Permit_v3(uniV3NFT).DOMAIN_SEPARATOR(),
-        keccak256(
-          abi.encode(
-            IERC721Permit_v3(uniV3NFT).PERMIT_TYPEHASH(),
-            spender,
-            uniV3TokenId,
-            0,
-            block.timestamp + 1 days
-          )
+  function test_callERC721Permit_v3() public {
+    bytes32 digest = MessageHashUtils.toTypedDataHash(
+      IERC721Permit_v3(uniswapV3NFT).DOMAIN_SEPARATOR(),
+      keccak256(
+        abi.encode(
+          IERC721Permit_v3(uniswapV3NFT).PERMIT_TYPEHASH(),
+          address(this),
+          uniswapV3TokenId,
+          0,
+          block.timestamp + 1 days
         )
       )
     );
 
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(testWallet, digest);
-    bytes memory callData = abi.encode(block.timestamp + 1 days, v, r, s);
-    bool success = PermitTest(address(this)).erc721Permit(uniV3NFT, uniV3TokenId, callData);
+    bool success = this.callERC721Permit(
+      uniswapV3NFT, uniswapV3TokenId, abi.encode(block.timestamp + 1 days, v, r, s)
+    );
     assertEq(success, true);
   }
 
-  function test_uniV4Permit() public {
-    bytes32 digest = _hashTypedData(_hashPermit(spender, uniV4TokenId, 0, block.timestamp + 1 days));
+  function test_callERC721Permit_v4() public {
+    bytes32 digest = MessageHashUtils.toTypedDataHash(
+      IERC721Permit_v3(uniswapV4NFT).DOMAIN_SEPARATOR(),
+      keccak256(
+        abi.encode(
+          IERC721Permit_v3(uniswapV3NFT).PERMIT_TYPEHASH(),
+          address(this),
+          uniswapV4TokenId,
+          0,
+          block.timestamp + 1 days
+        )
+      )
+    );
+
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(testWallet, digest);
     bytes memory signature = abi.encodePacked(r, s, v);
 
-    bytes memory callData = abi.encode(block.timestamp + 1 days, 0, signature);
-
-    bool success = PermitTest(address(this)).erc721Permit(uniV4NFT, uniV4TokenId, callData);
+    bool success = this.callERC721Permit(
+      uniswapV4NFT, uniswapV4TokenId, abi.encode(block.timestamp + 1 days, 0, signature)
+    );
     assertEq(success, true);
   }
 
   /* ========== ERC20 PERMIT TESTS ========== */
-  function test_DaiLikePermit() public {
-    bytes32 digest = bytes32('random');
-    (uint8 v, bytes32 r, bytes32 s) = vm.sign(testWallet, digest);
-    bytes memory callData = abi.encode(10, block.timestamp + 1 days, true, v, r, s);
+  function test_callERC20Permit_dai() public {
+    console.log('nonce', Nonces(DAI).nonces(address(this)));
 
-    bool success = PermitTest(address(this)).erc20Permit(mockERC20Permit, testWallet.addr, callData);
+    bytes32 digest = MessageHashUtils.toTypedDataHash(
+      IERC20Permit(DAI).DOMAIN_SEPARATOR(),
+      keccak256(
+        abi.encode(
+          IDaiLikePermit(DAI).PERMIT_TYPEHASH(),
+          testWallet.addr,
+          address(this),
+          0,
+          block.timestamp + 1 days,
+          true
+        )
+      )
+    );
+
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(testWallet, digest);
+
+    bool success = this.callERC20Permit(
+      DAI, testWallet.addr, abi.encode(0, block.timestamp + 1 days, true, v, r, s)
+    );
     assertEq(success, true);
   }
 
-  function test_erc20Permit() public {
-    bytes32 digest = bytes32('random');
+  function test_callERC20Permit_usdc() public {
+    bytes32 digest = MessageHashUtils.toTypedDataHash(
+      IERC20Permit(USDC).DOMAIN_SEPARATOR(),
+      keccak256(
+        abi.encode(
+          IDaiLikePermit(USDC).PERMIT_TYPEHASH(),
+          testWallet.addr,
+          address(this),
+          1 ether,
+          0,
+          block.timestamp + 1 days
+        )
+      )
+    );
+
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(testWallet, digest);
-    bytes memory callData = abi.encode(1 ether, block.timestamp + 1 days, v, r, s);
-    bool success = PermitTest(address(this)).erc20Permit(mockERC20Permit, testWallet.addr, callData);
+
+    bool success = this.callERC20Permit(
+      USDC, testWallet.addr, abi.encode(1 ether, block.timestamp + 1 days, v, r, s)
+    );
     assertEq(success, true);
   }
 
-  function erc721Permit(address token, uint256 tokenId, bytes calldata permitData)
+  function callERC721Permit(address token, uint256 tokenId, bytes calldata permitData)
     external
     returns (bool success)
   {
-    success = PermitHelper.erc721Permit(token, tokenId, permitData);
+    success = token.callERC721Permit(tokenId, permitData);
   }
 
-  function erc20Permit(address token, address owner, bytes calldata permitData)
+  function callERC20Permit(address token, address owner, bytes calldata permitData)
     external
     returns (bool success)
   {
-    success = PermitHelper.erc20Permit(token, owner, permitData);
+    success = token.callERC20Permit(owner, permitData);
   }
 
-  function _hashPermit(address _spender, uint256 tokenId, uint256 nonce, uint256 deadline)
-    internal
-    pure
-    returns (bytes32 digest)
-  {
-    // equivalent to: keccak256(abi.encode(PERMIT_TYPEHASH, spender, tokenId, nonce, deadline));
-    assembly ("memory-safe") {
-      let fmp := mload(0x40)
-      mstore(fmp, PERMIT_TYPEHASH)
-      mstore(add(fmp, 0x20), and(_spender, 0xffffffffffffffffffffffffffffffffffffffff))
-      mstore(add(fmp, 0x40), tokenId)
-      mstore(add(fmp, 0x60), nonce)
-      mstore(add(fmp, 0x80), deadline)
-      digest := keccak256(fmp, 0xa0)
-
-      // now clean the memory we used
-      mstore(fmp, 0) // fmp held PERMIT_TYPEHASH
-      mstore(add(fmp, 0x20), 0) // fmp+0x20 held spender
-      mstore(add(fmp, 0x40), 0) // fmp+0x40 held tokenId
-      mstore(add(fmp, 0x60), 0) // fmp+0x60 held nonce
-      mstore(add(fmp, 0x80), 0) // fmp+0x80 held deadline
-    }
-  }
-
-  function _hashTypedData(bytes32 dataHash) internal view returns (bytes32 digest) {
-    // equal to keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR(), dataHash));
-    bytes32 domainSeparator = IERC721Permit_v3(uniV4NFT).DOMAIN_SEPARATOR();
-    assembly ("memory-safe") {
-      let fmp := mload(0x40)
-      mstore(fmp, hex'1901')
-      mstore(add(fmp, 0x02), domainSeparator)
-      mstore(add(fmp, 0x22), dataHash)
-      digest := keccak256(fmp, 0x42)
-
-      // now clean the memory we used
-      mstore(fmp, 0) // fmp held "\x19\x01", domainSeparator
-      mstore(add(fmp, 0x20), 0) // fmp+0x20 held domainSeparator, dataHash
-      mstore(add(fmp, 0x40), 0) // fmp+0x40 held dataHash
-    }
+  function callPermit2(address owner, bytes calldata permit2Data) external returns (bool success) {
+    success = permit2.callPermit2(owner, permit2Data);
   }
 }

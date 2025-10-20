@@ -23,4 +23,6 @@ interface IDaiLikePermit {
     bytes32 r,
     bytes32 s
   ) external;
+
+  function PERMIT_TYPEHASH() external pure returns (bytes32);
 }
