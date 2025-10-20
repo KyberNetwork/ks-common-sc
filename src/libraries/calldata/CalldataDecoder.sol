@@ -16,61 +16,49 @@ library CalldataDecoder {
   uint256 internal constant SLICE_ERROR_SELECTOR = 0x3b99b53d;
 
   function decodeAddress(bytes calldata _bytes) internal pure returns (address value) {
-    assembly ('memory-safe') {
+    assembly ("memory-safe") {
       value := calldataload(_bytes.offset)
     }
   }
 
-  function decodeAddress(bytes calldata _bytes, uint256 _arg)
-    internal
-    pure
-    returns (address value)
-  {
-    assembly ('memory-safe') {
+  function decodeAddress(bytes calldata _bytes, uint256 _arg) internal pure returns (address value) {
+    assembly ("memory-safe") {
       value := calldataload(add(_bytes.offset, shl(5, _arg)))
     }
   }
 
   function decodeUint256(bytes calldata _bytes) internal pure returns (uint256 value) {
-    assembly ('memory-safe') {
+    assembly ("memory-safe") {
       value := calldataload(_bytes.offset)
     }
   }
 
-  function decodeUint256(bytes calldata _bytes, uint256 _arg)
-    internal
-    pure
-    returns (uint256 value)
-  {
-    assembly ('memory-safe') {
+  function decodeUint256(bytes calldata _bytes, uint256 _arg) internal pure returns (uint256 value) {
+    assembly ("memory-safe") {
       value := calldataload(add(_bytes.offset, shl(5, _arg)))
     }
   }
 
   function decodeBool(bytes calldata _bytes) internal pure returns (bool value) {
-    assembly ('memory-safe') {
+    assembly ("memory-safe") {
       value := calldataload(_bytes.offset)
     }
   }
 
   function decodeBool(bytes calldata _bytes, uint256 _arg) internal pure returns (bool value) {
-    assembly ('memory-safe') {
+    assembly ("memory-safe") {
       value := calldataload(add(_bytes.offset, shl(5, _arg)))
     }
   }
 
   function decodeBytes32(bytes calldata _bytes) internal pure returns (bytes32 value) {
-    assembly ('memory-safe') {
+    assembly ("memory-safe") {
       value := calldataload(_bytes.offset)
     }
   }
 
-  function decodeBytes32(bytes calldata _bytes, uint256 _arg)
-    internal
-    pure
-    returns (bytes32 value)
-  {
-    assembly ('memory-safe') {
+  function decodeBytes32(bytes calldata _bytes, uint256 _arg) internal pure returns (bytes32 value) {
+    assembly ("memory-safe") {
       value := calldataload(add(_bytes.offset, shl(5, _arg)))
     }
   }
@@ -87,7 +75,7 @@ library CalldataDecoder {
     pure
     returns (uint256 length, uint256 offset)
   {
-    assembly ('memory-safe') {
+    assembly ("memory-safe") {
       // The offset of the `_arg`-th element is `32 * arg`, which stores the offset of the length pointer.
       // shl(5, x) is equivalent to mul(32, x)
       let lengthPtr := add(_bytes.offset, calldataload(add(_bytes.offset, shl(5, _arg))))
@@ -111,7 +99,7 @@ library CalldataDecoder {
     returns (bytes calldata res)
   {
     (uint256 length, uint256 offset) = decodeLengthOffset(_bytes, _arg);
-    assembly ('memory-safe') {
+    assembly ("memory-safe") {
       res.length := length
       res.offset := offset
     }
@@ -126,7 +114,7 @@ library CalldataDecoder {
     returns (uint256[] calldata res)
   {
     (uint256 length, uint256 offset) = decodeLengthOffset(_bytes, _arg);
-    assembly ('memory-safe') {
+    assembly ("memory-safe") {
       res.length := length
       res.offset := offset
     }
@@ -141,7 +129,7 @@ library CalldataDecoder {
     returns (address[] calldata res)
   {
     (uint256 length, uint256 offset) = decodeLengthOffset(_bytes, _arg);
-    assembly ('memory-safe') {
+    assembly ("memory-safe") {
       res.length := length
       res.offset := offset
     }
@@ -156,7 +144,7 @@ library CalldataDecoder {
     returns (bytes32[] calldata res)
   {
     (uint256 length, uint256 offset) = decodeLengthOffset(_bytes, _arg);
-    assembly ('memory-safe') {
+    assembly ("memory-safe") {
       res.length := length
       res.offset := offset
     }

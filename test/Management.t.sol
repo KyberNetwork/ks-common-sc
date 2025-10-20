@@ -19,9 +19,7 @@ contract ERC721Mock is ERC721 {
 }
 
 contract Management is ManagementRescuable, ManagementPausable {
-  constructor(uint48 initialDelay, address initialAdmin)
-    ManagementBase(initialDelay, initialAdmin)
-  {}
+  constructor(uint48 initialDelay, address initialAdmin) ManagementBase(initialDelay, initialAdmin) {}
 }
 
 contract ManagementTest is Test {

@@ -5,9 +5,8 @@ import {Common} from './Common.sol';
 
 import {IManagementBase} from '../interfaces/IManagementBase.sol';
 
-import {
-  AccessControlDefaultAdminRules
-} from 'openzeppelin-contracts/contracts/access/extensions/AccessControlDefaultAdminRules.sol';
+import {AccessControlDefaultAdminRules} from
+  'openzeppelin-contracts/contracts/access/extensions/AccessControlDefaultAdminRules.sol';
 
 contract ManagementBase is AccessControlDefaultAdminRules, Common, IManagementBase {
   modifier onlyRoleOrDefaultAdmin(bytes32 role) {
