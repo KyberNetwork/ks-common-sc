@@ -2,88 +2,82 @@
 
 pragma solidity ^0.8.0;
 
+import {IAllowanceTransfer} from '../../interfaces/IAllowanceTransfer.sol';
 import {IDaiLikePermit} from '../../interfaces/IDaiLikePermit.sol';
 import {IERC721Permit_v3} from '../../interfaces/IERC721Permit_v3.sol';
 import {IERC721Permit_v4} from '../../interfaces/IERC721Permit_v4.sol';
-import {CustomRevert} from '../CustomRevert.sol';
 import {CalldataDecoder} from '../calldata/CalldataDecoder.sol';
+
 import {IERC20Permit} from
   'openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol';
 
 library PermitHelper {
   using CalldataDecoder for bytes;
 
-  /// @notice Additional context for ERC-7751 wrapped error when permit fails
-  error ERC20PermitFailed();
-  error ERC721PermitFailed();
-
-  function erc20Permit(address token, address owner, bytes calldata permitData)
+  function callERC20Permit(address token, address owner, bytes calldata permitData)
     internal
-    returns (bool success)
+    returns (bool)
   {
     if (permitData.length == 32 * 5) {
-      success = _callErc20Permit(token, owner, IERC20Permit.permit.selector, permitData);
+      uint256 value = permitData.decodeUint256(0);
+      uint256 deadline = permitData.decodeUint256(1);
+      uint8 v = uint8(permitData.decodeUint256(2));
+      bytes32 r = permitData.decodeBytes32(3);
+      bytes32 s = permitData.decodeBytes32(4);
+
+      try IERC20Permit(token).permit(owner, address(this), value, deadline, v, r, s) {
+        return true;
+      } catch {}
     } else if (permitData.length == 32 * 6) {
-      success = _callErc20Permit(token, owner, IDaiLikePermit.permit.selector, permitData);
-    } else {
-      return false;
+      uint256 nonce = permitData.decodeUint256(0);
+      uint256 expiry = permitData.decodeUint256(1);
+      bool allowed = permitData.decodeBool(2);
+      uint8 v = uint8(permitData.decodeUint256(3));
+      bytes32 r = permitData.decodeBytes32(4);
+      bytes32 s = permitData.decodeBytes32(5);
+
+      try IDaiLikePermit(token).permit(owner, address(this), nonce, expiry, allowed, v, r, s) {
+        return true;
+      } catch {}
     }
   }
 
-  function erc721Permit(address token, uint256 tokenId, bytes calldata permitData)
+  function callERC721Permit(address token, uint256 tokenId, bytes calldata permitData)
     internal
-    returns (bool success)
+    returns (bool)
   {
     if (permitData.length == 32 * 4) {
-      success = _callErc721Permit(token, tokenId, IERC721Permit_v3.permit.selector, permitData, 0);
+      uint256 deadline = permitData.decodeUint256(0);
+      uint8 v = uint8(permitData.decodeUint256(1));
+      bytes32 r = permitData.decodeBytes32(2);
+      bytes32 s = permitData.decodeBytes32(3);
+
+      try IERC721Permit_v3(token).permit(address(this), tokenId, deadline, v, r, s) {
+        return true;
+      } catch {}
     } else if (permitData.length == 32 * 7) {
-      success =
-        _callErc721Permit(token, tokenId, IERC721Permit_v4.permit.selector, permitData, 0xa0);
-    } else {
-      return false;
+      uint256 deadline = permitData.decodeUint256(0);
+      uint256 nonce = permitData.decodeUint256(1);
+      bytes calldata signature = permitData.decodeBytes(2);
+
+      try IERC721Permit_v4(token).permit(address(this), tokenId, deadline, nonce, signature) {
+        return true;
+      } catch {}
     }
   }
 
-  function _callErc721Permit(
-    address token,
-    uint256 tokenId,
-    bytes4 selector,
-    bytes calldata permitData,
-    uint256 overrideSigOffset
-  ) internal returns (bool success) {
-    bytes memory data = new bytes(4 + 32 * 2 + permitData.length);
+  function callPermit2(IAllowanceTransfer permit2, address owner, bytes calldata permit2Data)
+    internal
+    returns (bool)
+  {
+    IAllowanceTransfer.PermitBatch calldata permitBatch;
     assembly ("memory-safe") {
-      mstore(add(data, 0x20), selector)
-      mstore(add(data, 0x24), address())
-      mstore(add(data, 0x44), tokenId)
-      calldatacopy(add(data, 0x64), permitData.offset, permitData.length)
-      // override the signature offset in case dynamic bytes (65 bytes length)
-      if overrideSigOffset { mstore(add(data, add(overrideSigOffset, 4)), overrideSigOffset) }
-      success := call(gas(), token, 0, add(data, 0x20), mload(data), 0, 0)
+      permitBatch := add(permit2Data.offset, calldataload(permit2Data.offset))
     }
+    bytes calldata signature = permit2Data.decodeBytes(1);
 
-    if (!success) {
-      CustomRevert.bubbleUpAndRevertWith(token, selector, ERC721PermitFailed.selector);
-    }
-  }
-
-  function _callErc20Permit(
-    address token,
-    address owner,
-    bytes4 selector,
-    bytes calldata permitData
-  ) internal returns (bool success) {
-    bytes memory data = new bytes(4 + 32 * 2 + permitData.length);
-    assembly ("memory-safe") {
-      mstore(add(data, 0x20), selector)
-      mstore(add(data, 0x24), owner)
-      mstore(add(data, 0x44), address())
-      calldatacopy(add(data, 0x64), permitData.offset, permitData.length)
-      success := call(gas(), token, 0, add(data, 0x20), mload(data), 0, 0)
-    }
-
-    if (!success) {
-      CustomRevert.bubbleUpAndRevertWith(token, selector, ERC20PermitFailed.selector);
-    }
+    try permit2.permit(owner, permitBatch, signature) {
+      return true;
+    } catch {}
   }
 }

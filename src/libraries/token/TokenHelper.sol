@@ -17,10 +17,10 @@ library TokenHelper {
   /// @notice Additional context for ERC-7751 wrapped error when an ERC20 approve fails
   error ERC20ApproveFailed();
 
-  address constant NATIVE_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+  address internal constant NATIVE_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
   function isNative(address token) internal pure returns (bool) {
-    return token == NATIVE_ADDRESS;
+    return token == NATIVE_ADDRESS || token == address(0);
   }
 
   function safeTransferNative(address to, uint256 amount) internal {

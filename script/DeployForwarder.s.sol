@@ -13,8 +13,10 @@ contract DeployForwarderScript is BaseScript {
     }
     salt = string.concat('KSGenericForwarder_', salt);
 
+    vm.startBroadcast();
     address forwarder =
       _create3Deploy(keccak256(abi.encodePacked(salt)), type(KSGenericForwarder).creationCode);
+    vm.stopBroadcast();
 
     _writeAddress('forwarder', forwarder);
 

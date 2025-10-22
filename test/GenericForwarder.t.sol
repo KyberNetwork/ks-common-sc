@@ -15,9 +15,6 @@ interface IStETH {
 contract GenericForwarderTest is Test {
   KSGenericForwarder public forwarder;
 
-  string ETH_RPC_URL = vm.envString('ETH_NODE_URL');
-  uint256 constant FORK_BLOCK = 22_930_000;
-
   address usdc = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
   address weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
   address steth = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84;
@@ -25,7 +22,7 @@ contract GenericForwarderTest is Test {
   address alice = makeAddr('alice');
 
   function setUp() public {
-    vm.createSelectFork(ETH_RPC_URL, FORK_BLOCK);
+    vm.createSelectFork(vm.envString('ETH_NODE_URL'), 22_930_000);
 
     forwarder = new KSGenericForwarder();
   }
