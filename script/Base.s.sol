@@ -23,6 +23,16 @@ contract BaseScript is Script {
 
   string path;
 
+  modifier multiChain(string[] memory chainIdsOrAliases) {
+    for (uint256 i = 0; i < chainIdsOrAliases.length; i++) {
+      string memory chainIdOrAlias = chainIdsOrAliases[i];
+      vm.createSelectFork(_getRpcUrl(chainIdOrAlias));
+      vm.startBroadcast();
+      _;
+      vm.stopBroadcast();
+    }
+  }
+
   function setUp() public virtual {
     path = string.concat(vm.projectRoot(), '/script/config/');
   }
@@ -169,5 +179,9 @@ contract BaseScript is Script {
 
   function _chainId() internal returns (string memory) {
     return vm.toString(block.chainid);
+  }
+
+  function _getRpcUrl(string memory chainIdOrAlias) internal returns (string memory) {
+    return vm.envOr(string.concat('RPC_', chainIdOrAlias), chainIdOrAlias);
   }
 }
