@@ -22,7 +22,7 @@ contract GenericForwarderTest is Test {
   address alice = makeAddr('alice');
 
   function setUp() public {
-    vm.createSelectFork(vm.envString('ETH_NODE_URL'), 22_930_000);
+    vm.createSelectFork(vm.envString('RPC_1'), 22_930_000);
 
     forwarder = new KSGenericForwarder();
   }

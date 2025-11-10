@@ -22,17 +22,13 @@ contract BaseScript is Script {
   address internal constant DEFAULT_CREATE3_DEPLOYER = 0xc7c662Fc760FE1d5cB97fd8A68cb43A046da3F7d;
 
   string path;
-  string chainId;
-  string dotChainId;
-
-  address create3Deployer;
 
   function setUp() public virtual {
     path = string.concat(vm.projectRoot(), '/script/config/');
-    chainId = vm.toString(block.chainid);
-    dotChainId = string.concat('.', chainId);
+  }
 
-    create3Deployer = _readAddressOr('create3-deployer', DEFAULT_CREATE3_DEPLOYER);
+  function _create3Deployer() internal returns (address) {
+    return _readAddressOr('create3-deployer', DEFAULT_CREATE3_DEPLOYER);
   }
 
   function _getJsonString(string memory key) internal view returns (string memory) {
@@ -45,8 +41,8 @@ contract BaseScript is Script {
 
   function _readAddress(string memory key) internal returns (address result) {
     string memory json = _getJsonString(key);
-    if (json.keyExists(dotChainId)) {
-      result = json.readAddress(dotChainId);
+    if (json.keyExists(_dotChainId())) {
+      result = json.readAddress(_dotChainId());
     } else {
       result = json.readAddress('.0');
     }
@@ -59,7 +55,7 @@ contract BaseScript is Script {
     returns (address result)
   {
     string memory json = _getJsonString(key);
-    result = json.readAddressOr(dotChainId, defaultValue);
+    result = json.readAddressOr(_dotChainId(), defaultValue);
 
     emit ReadAddress(key, result);
   }
@@ -69,13 +65,13 @@ contract BaseScript is Script {
       return;
     }
     vm.serializeJson(key, _getJsonString(key));
-    vm.writeJson(key.serialize(chainId, value), string.concat(path, key, '.json'));
+    vm.writeJson(key.serialize(_chainId(), value), string.concat(path, key, '.json'));
   }
 
   function _readBool(string memory key) internal returns (bool result) {
     string memory json = _getJsonString(key);
-    if (json.keyExists(dotChainId)) {
-      result = json.readBool(dotChainId);
+    if (json.keyExists(_dotChainId())) {
+      result = json.readBool(_dotChainId());
     } else {
       result = json.readBool('.0');
     }
@@ -85,15 +81,15 @@ contract BaseScript is Script {
 
   function _readBoolOr(string memory key, bool defaultValue) internal returns (bool result) {
     string memory json = _getJsonString(key);
-    result = json.readBoolOr(dotChainId, defaultValue);
+    result = json.readBoolOr(_dotChainId(), defaultValue);
 
     emit ReadBool(key, result);
   }
 
   function _readAddressArray(string memory key) internal returns (address[] memory result) {
     string memory json = _getJsonString(key);
-    if (json.keyExists(dotChainId)) {
-      result = json.readAddressArray(dotChainId);
+    if (json.keyExists(_dotChainId())) {
+      result = json.readAddressArray(_dotChainId());
     } else {
       result = json.readAddressArray('.0');
     }
@@ -106,15 +102,15 @@ contract BaseScript is Script {
     returns (address[] memory result)
   {
     string memory json = _getJsonString(key);
-    result = json.readAddressArrayOr(dotChainId, defaultValue);
+    result = json.readAddressArrayOr(_dotChainId(), defaultValue);
 
     emit ReadAddressArray(key, result);
   }
 
   function _readBytes(string memory key) internal returns (bytes memory result) {
     string memory json = _getJsonString(key);
-    if (json.keyExists(dotChainId)) {
-      result = json.readBytes(dotChainId);
+    if (json.keyExists(_dotChainId())) {
+      result = json.readBytes(_dotChainId());
     } else {
       result = json.readBytes('.0');
     }
@@ -127,15 +123,15 @@ contract BaseScript is Script {
     returns (bytes memory result)
   {
     string memory json = _getJsonString(key);
-    result = json.readBytesOr(dotChainId, defaultValue);
+    result = json.readBytesOr(_dotChainId(), defaultValue);
 
     emit ReadBytes(key, result);
   }
 
   function _readBytesArray(string memory key) internal returns (bytes[] memory result) {
     string memory json = _getJsonString(key);
-    if (json.keyExists(dotChainId)) {
-      result = json.readBytesArray(dotChainId);
+    if (json.keyExists(_dotChainId())) {
+      result = json.readBytesArray(_dotChainId());
     } else {
       result = json.readBytesArray('.0');
     }
@@ -148,7 +144,7 @@ contract BaseScript is Script {
     returns (bytes[] memory result)
   {
     string memory json = _getJsonString(key);
-    result = json.readBytesArrayOr(dotChainId, defaultValue);
+    result = json.readBytesArrayOr(_dotChainId(), defaultValue);
 
     emit ReadBytesArray(key, result);
   }
@@ -162,9 +158,16 @@ contract BaseScript is Script {
     internal
     returns (address deployed)
   {
-    bytes memory result = create3Deployer.functionCall(
-      abi.encodeWithSignature('deploy(bytes32,bytes)', salt, creationCode)
-    );
+    bytes memory result = _create3Deployer()
+      .functionCall(abi.encodeWithSignature('deploy(bytes32,bytes)', salt, creationCode));
     deployed = abi.decode(result, (address));
+  }
+
+  function _dotChainId() internal returns (string memory) {
+    return string.concat('.', _chainId());
+  }
+
+  function _chainId() internal returns (string memory) {
+    return vm.toString(block.chainid);
   }
 }
