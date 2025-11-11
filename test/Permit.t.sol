@@ -32,7 +32,7 @@ contract PermitTest is Test {
   Vm.Wallet public testWallet = vm.createWallet('test wallet');
 
   function setUp() public {
-    vm.createSelectFork(vm.envString('ETH_NODE_URL'), 22_930_000);
+    vm.createSelectFork(vm.envString('RPC_1'), 22_930_000);
 
     address owner = IERC721(uniswapV3NFT).ownerOf(uniswapV3TokenId);
     vm.prank(owner);

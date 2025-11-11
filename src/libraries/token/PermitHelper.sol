@@ -8,8 +8,9 @@ import {IERC721Permit_v3} from '../../interfaces/IERC721Permit_v3.sol';
 import {IERC721Permit_v4} from '../../interfaces/IERC721Permit_v4.sol';
 import {CalldataDecoder} from '../calldata/CalldataDecoder.sol';
 
-import {IERC20Permit} from
-  'openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol';
+import {
+  IERC20Permit
+} from 'openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol';
 
 library PermitHelper {
   using CalldataDecoder for bytes;
@@ -71,7 +72,7 @@ library PermitHelper {
     returns (bool)
   {
     IAllowanceTransfer.PermitBatch calldata permitBatch;
-    assembly ("memory-safe") {
+    assembly ('memory-safe') {
       permitBatch := add(permit2Data.offset, calldataload(permit2Data.offset))
     }
     bytes calldata signature = permit2Data.decodeBytes(1);

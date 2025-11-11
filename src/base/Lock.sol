@@ -23,14 +23,14 @@ contract Lock {
   /// @notice set the locker of the contract
   function _setLocker(address locker) internal {
     // The locker is always msg.sender or address(0) so does not need to be cleaned
-    assembly ("memory-safe") {
+    assembly ('memory-safe') {
       tstore(LOCKER_SLOT, locker)
     }
   }
 
   /// @notice return the current locker of the contract
   function _getLocker() internal view returns (address locker) {
-    assembly ("memory-safe") {
+    assembly ('memory-safe') {
       locker := tload(LOCKER_SLOT)
     }
   }
