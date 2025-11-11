@@ -60,6 +60,20 @@ contract BaseScript is Script {
     emit ReadAddress(key, result);
   }
 
+  function _readAddressByChainId(string memory key, uint256 chainId)
+    internal
+    returns (address result)
+  {
+    string memory json = _getJsonString(key);
+    if (json.keyExists(_toDotChainId(chainId))) {
+      result = json.readAddress(_toDotChainId(chainId));
+    } else {
+      result = json.readAddress('.0');
+    }
+
+    emit ReadAddress(key, result);
+  }
+
   function _readAddressOr(string memory key, address defaultValue)
     internal
     returns (address result)
@@ -89,6 +103,17 @@ contract BaseScript is Script {
     emit ReadBool(key, result);
   }
 
+  function _readBoolByChainId(string memory key, uint256 chainId) internal returns (bool result) {
+    string memory json = _getJsonString(key);
+    if (json.keyExists(_toDotChainId(chainId))) {
+      result = json.readBool(_toDotChainId(chainId));
+    } else {
+      result = json.readBool('.0');
+    }
+
+    emit ReadBool(key, result);
+  }
+
   function _readBoolOr(string memory key, bool defaultValue) internal returns (bool result) {
     string memory json = _getJsonString(key);
     result = json.readBoolOr(_dotChainId(), defaultValue);
@@ -100,6 +125,20 @@ contract BaseScript is Script {
     string memory json = _getJsonString(key);
     if (json.keyExists(_dotChainId())) {
       result = json.readAddressArray(_dotChainId());
+    } else {
+      result = json.readAddressArray('.0');
+    }
+
+    emit ReadAddressArray(key, result);
+  }
+
+  function _readAddressArrayByChainId(string memory key, uint256 chainId)
+    internal
+    returns (address[] memory result)
+  {
+    string memory json = _getJsonString(key);
+    if (json.keyExists(_toDotChainId(chainId))) {
+      result = json.readAddressArray(_toDotChainId(chainId));
     } else {
       result = json.readAddressArray('.0');
     }
@@ -128,6 +167,19 @@ contract BaseScript is Script {
     emit ReadBytes(key, result);
   }
 
+  function _readBytesByChainId(string memory key, uint256 chainId)
+    internal
+    returns (bytes memory result)
+  {
+    string memory json = _getJsonString(key);
+    if (json.keyExists(_toDotChainId(chainId))) {
+      result = json.readBytes(_toDotChainId(chainId));
+    } else {
+      result = json.readBytes('.0');
+    }
+    emit ReadBytes(key, result);
+  }
+
   function _readBytesOr(string memory key, bytes memory defaultValue)
     internal
     returns (bytes memory result)
@@ -146,6 +198,19 @@ contract BaseScript is Script {
       result = json.readBytesArray('.0');
     }
 
+    emit ReadBytesArray(key, result);
+  }
+
+  function _readBytesArrayByChainId(string memory key, uint256 chainId)
+    internal
+    returns (bytes[] memory result)
+  {
+    string memory json = _getJsonString(key);
+    if (json.keyExists(_toDotChainId(chainId))) {
+      result = json.readBytesArray(_toDotChainId(chainId));
+    } else {
+      result = json.readBytesArray('.0');
+    }
     emit ReadBytesArray(key, result);
   }
 
@@ -173,12 +238,20 @@ contract BaseScript is Script {
     deployed = abi.decode(result, (address));
   }
 
+  function _toDotChainId(uint256 chainId) internal view returns (string memory) {
+    return string.concat('.', vm.toString(chainId));
+  }
+
   function _dotChainId() internal returns (string memory) {
     return string.concat('.', _chainId());
   }
 
   function _chainId() internal returns (string memory) {
-    return vm.toString(block.chainid);
+    return vm.toString(vm.getChainId());
+  }
+
+  function _chainIdUint() internal view returns (uint256) {
+    return vm.getChainId();
   }
 
   function _getRpcUrl(string memory chainIdOrAlias) internal returns (string memory) {
