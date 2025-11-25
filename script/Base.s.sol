@@ -4,10 +4,11 @@ pragma solidity ^0.8.0;
 import 'forge-std/Script.sol';
 import 'forge-std/StdJson.sol';
 
+import {Config} from 'forge-std/Config.sol';
 import 'openzeppelin-contracts/contracts/token/ERC20/IERC20.sol';
 import 'openzeppelin-contracts/contracts/utils/Address.sol';
 
-contract BaseScript is Script {
+contract BaseScript is Script, Config {
   using stdJson for string;
   using Address for address;
 
@@ -24,9 +25,11 @@ contract BaseScript is Script {
   string path;
 
   modifier multiChain(string[] memory chainIdsOrAliases) {
+    _loadConfigs(chainIdsOrAliases);
     for (uint256 i = 0; i < chainIdsOrAliases.length; i++) {
       string memory chainIdOrAlias = chainIdsOrAliases[i];
       vm.createSelectFork(_getRpcUrl(chainIdOrAlias));
+      _loadConfig(chainIdOrAlias);
       vm.startBroadcast();
       _;
       vm.stopBroadcast();
@@ -35,7 +38,14 @@ contract BaseScript is Script {
 
   function setUp() public virtual {
     path = string.concat(vm.projectRoot(), '/script/config/');
+    _loadConfigs();
   }
+
+  function _loadConfigs() internal virtual {}
+
+  function _loadConfigs(string[] memory chainIdsOrAliases) internal virtual {}
+
+  function _loadConfig(string memory chainIdOrAlias) internal virtual {}
 
   function _create3Deployer() internal returns (address) {
     return _readAddressOr('create3-deployer', DEFAULT_CREATE3_DEPLOYER);
