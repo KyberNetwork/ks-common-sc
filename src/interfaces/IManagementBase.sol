@@ -8,6 +8,7 @@ interface IManagementBase {
   /// @notice Thrown when the account is missing one of the required roles
   error AccessControlUnauthorizedAccount(address account, bytes32[] neededRoles);
 
+  /// @notice Emitted when the role revoker for a role is changed
   event RoleRevokerChanged(
     bytes32 indexed role, bytes32 indexed previousRoleRevoker, bytes32 indexed newRoleRevoker
   );
@@ -28,9 +29,10 @@ interface IManagementBase {
   function batchRevokeRole(bytes32 role, address[] memory accounts) external;
 
   /// @notice Returns the role other than the admin role that can revoke the given role
+  /// @notice By default, the role revoker for all roles is the default admin role
   function roleRevokers(bytes32 role) external view returns (bytes32);
 
-  /// @notice Sets the revoker roles for multiple roles
+  /// @notice Sets the role revoker for a given role
   /// @param role The role to update the revoker role for
   /// @param roleRevoker The new revoker role for the role
   function setRoleRevoker(bytes32 role, bytes32 roleRevoker) external;
