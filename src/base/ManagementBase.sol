@@ -11,6 +11,7 @@ import {
 
 contract ManagementBase is AccessControlDefaultAdminRules, Common, IManagementBase {
   /// @inheritdoc IManagementBase
+  /// @notice By default, the role revokers for all roles are set to 0, which is the default admin role
   mapping(bytes32 role => bytes32 roleRevoker) public roleRevokers;
 
   constructor(uint48 initialDelay, address initialAdmin)
@@ -23,7 +24,7 @@ contract ManagementBase is AccessControlDefaultAdminRules, Common, IManagementBa
       bytes32[] memory neededRoles = new bytes32[](2);
       neededRoles[0] = role;
       neededRoles[1] = DEFAULT_ADMIN_ROLE;
-      revert ManagementUnauthorizedAccount(_msgSender(), neededRoles);
+      revert UnauthorizedAccount(_msgSender(), neededRoles);
     }
     _;
   }
@@ -62,7 +63,7 @@ contract ManagementBase is AccessControlDefaultAdminRules, Common, IManagementBa
     neededRoles[1] = getRoleAdmin(role);
 
     if (!hasRole(neededRoles[0], _msgSender()) && !hasRole(neededRoles[1], _msgSender())) {
-      revert ManagementUnauthorizedAccount(_msgSender(), neededRoles);
+      revert UnauthorizedAccount(_msgSender(), neededRoles);
     }
 
     _revokeRole(role, account);
@@ -85,6 +86,10 @@ contract ManagementBase is AccessControlDefaultAdminRules, Common, IManagementBa
   }
 
   function _setRoleRevoker(bytes32 role, bytes32 roleRevoker) internal {
+    if (role == roleRevoker) {
+      revert InvalidRoleRevoker();
+    }
+
     bytes32 previousRoleRevoker = roleRevokers[role];
     roleRevokers[role] = roleRevoker;
     emit RoleRevokerChanged(role, previousRoleRevoker, roleRevoker);

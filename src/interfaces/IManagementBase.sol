@@ -6,7 +6,10 @@ import {IERC721} from 'openzeppelin-contracts/contracts/token/ERC721/IERC721.sol
 
 interface IManagementBase {
   /// @notice Thrown when the account is missing one of the required roles
-  error ManagementUnauthorizedAccount(address account, bytes32[] neededRoles);
+  error UnauthorizedAccount(address account, bytes32[] neededRoles);
+
+  /// @notice Thrown when the role revoker is invalid
+  error InvalidRoleRevoker();
 
   /// @notice Emitted when the role revoker for a role is changed
   event RoleRevokerChanged(
@@ -29,7 +32,6 @@ interface IManagementBase {
   function batchRevokeRole(bytes32 role, address[] memory accounts) external;
 
   /// @notice Returns the role other than the admin role that can revoke the given role
-  /// @notice By default, the role revoker for all roles is the default admin role
   function roleRevokers(bytes32 role) external view returns (bytes32);
 
   /// @notice Sets the role revoker for a given role
