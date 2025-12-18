@@ -7,6 +7,7 @@ import 'src/base/ManagementPausable.sol';
 import 'src/base/ManagementRescuable.sol';
 import 'src/libraries/token/TokenHelper.sol';
 
+import 'openzeppelin-contracts/contracts/access/IAccessControl.sol';
 import 'openzeppelin-contracts/contracts/mocks/token/ERC20Mock.sol';
 import 'openzeppelin-contracts/contracts/token/ERC721/ERC721.sol';
 
@@ -21,6 +22,8 @@ contract ERC721Mock is ERC721 {
 contract Management is ManagementRescuable, ManagementPausable {
   constructor(uint48 initialDelay, address initialAdmin)
     ManagementBase(initialDelay, initialAdmin)
+    ManagementRescuable(new address[](0))
+    ManagementPausable(new address[](0))
   {}
 }
 
@@ -110,6 +113,29 @@ contract ManagementTest is Test {
     for (uint256 i = 0; i < tokens.length; i++) {
       assertEq(tokens[i].ownerOf(tokenIds[i]), recipient);
     }
+  }
+
+  /// forge-config: default.fuzz.runs = 20
+  function test_roleRevokers(bytes32 role, bytes32 roleRevoker) public {
+    vm.assume(role != 0);
+    vm.assume(roleRevoker != 0);
+    vm.assume(roleRevoker != role);
+
+    address account1 = makeAddr('account1');
+    address account2 = makeAddr('account2');
+
+    vm.startPrank(admin);
+    management.grantRole(role, account1);
+    management.grantRole(roleRevoker, account2);
+    management.setRoleRevoker(role, roleRevoker);
+    vm.stopPrank();
+
+    vm.expectEmit(true, true, true, true, address(management));
+    emit IAccessControl.RoleRevoked(role, account1, account2);
+
+    vm.prank(account2);
+    management.revokeRole(role, account1);
+    assertFalse(management.hasRole(role, account1));
   }
 
   function toDynamicArray(uint256 value) internal pure returns (uint256[] memory) {

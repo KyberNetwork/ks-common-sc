@@ -23,7 +23,7 @@ contract ManagementBase is AccessControlDefaultAdminRules, Common, IManagementBa
       bytes32[] memory neededRoles = new bytes32[](2);
       neededRoles[0] = role;
       neededRoles[1] = DEFAULT_ADMIN_ROLE;
-      revert AccessControlUnauthorizedAccount(_msgSender(), neededRoles);
+      revert ManagementUnauthorizedAccount(_msgSender(), neededRoles);
     }
     _;
   }
@@ -62,7 +62,7 @@ contract ManagementBase is AccessControlDefaultAdminRules, Common, IManagementBa
     neededRoles[1] = getRoleAdmin(role);
 
     if (!hasRole(neededRoles[0], _msgSender()) && !hasRole(neededRoles[1], _msgSender())) {
-      revert AccessControlUnauthorizedAccount(_msgSender(), neededRoles);
+      revert ManagementUnauthorizedAccount(_msgSender(), neededRoles);
     }
 
     _revokeRole(role, account);

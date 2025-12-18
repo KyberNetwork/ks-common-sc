@@ -6,7 +6,7 @@ import {IERC721} from 'openzeppelin-contracts/contracts/token/ERC721/IERC721.sol
 
 interface IManagementBase {
   /// @notice Thrown when the account is missing one of the required roles
-  error AccessControlUnauthorizedAccount(address account, bytes32[] neededRoles);
+  error ManagementUnauthorizedAccount(address account, bytes32[] neededRoles);
 
   /// @notice Emitted when the role revoker for a role is changed
   event RoleRevokerChanged(
