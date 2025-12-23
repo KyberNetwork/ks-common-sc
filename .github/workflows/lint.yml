@@ -6,7 +6,6 @@ on:
       - main
   pull_request:
 
-
 jobs:
   forge-lint:
     name: Forge Lint
@@ -19,7 +18,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: v1.4.2
+          version: v1.5.0
 
       - name: Show Forge version
         run: forge --version

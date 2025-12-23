@@ -13,6 +13,10 @@ import {IERC721} from 'openzeppelin-contracts/contracts/token/ERC721/IERC721.sol
 abstract contract ManagementRescuable is ManagementBase, IManagementRescuable {
   using TokenHelper for address;
 
+  constructor(address[] memory initialRescuers) {
+    _batchGrantRole(KSRoles.RESCUER_ROLE, initialRescuers);
+  }
+
   /// @inheritdoc IManagementRescuable
   function rescueERC20s(address[] calldata tokens, uint256[] memory amounts, address recipient)
     external
