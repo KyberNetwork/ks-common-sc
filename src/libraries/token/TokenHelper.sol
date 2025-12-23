@@ -23,24 +23,28 @@ library TokenHelper {
     return token == NATIVE_ADDRESS || token == address(0);
   }
 
-  function safeTransferNative(address to, uint256 amount) internal {
-    if (amount == 0) return;
+  function trySafeTransferNative(address to, uint256 amount) internal returns (bool success) {
+    if (amount == 0) return true;
 
-    bool success;
     assembly ('memory-safe') {
       // Transfer the ETH and revert if it fails.
       success := call(gas(), to, amount, 0, 0, 0, 0)
     }
+  }
+
+  function safeTransferNative(address to, uint256 amount) internal {
     // revert with NativeTransferFailed, containing the bubbled up error as an argument
-    if (!success) {
+    if (!trySafeTransferNative(to, amount)) {
       CustomRevert.bubbleUpAndRevertWith(to, bytes4(0), NativeTransferFailed.selector);
     }
   }
 
-  function safeTransferERC20(address token, address to, uint256 amount) internal {
-    if (amount == 0) return;
+  function trySafeTransferERC20(address token, address to, uint256 amount)
+    internal
+    returns (bool success)
+  {
+    if (amount == 0) return true;
 
-    bool success;
     assembly ('memory-safe') {
       // Get a pointer to some free memory.
       let fmp := mload(0x40)
@@ -66,11 +70,25 @@ library TokenHelper {
       mstore(add(fmp, 0x20), 0) // 4 bytes of `to` and 28 bytes of `amount` were stored here
       mstore(add(fmp, 0x40), 0) // 4 bytes of `amount` were stored here
     }
+  }
+
+  function safeTransferERC20(address token, address to, uint256 amount) internal {
     // revert with ERC20TransferFailed, containing the bubbled up error as an argument
-    if (!success) {
+    if (!trySafeTransferERC20(token, to, amount)) {
       CustomRevert.bubbleUpAndRevertWith(
         token, IERC20.transfer.selector, ERC20TransferFailed.selector
       );
+    }
+  }
+
+  function trySafeTransfer(address token, address to, uint256 amount)
+    internal
+    returns (bool success)
+  {
+    if (isNative(token)) {
+      return trySafeTransferNative(to, amount);
+    } else {
+      return trySafeTransferERC20(token, to, amount);
     }
   }
 
@@ -82,10 +100,12 @@ library TokenHelper {
     }
   }
 
-  function safeTransferFrom(address token, address from, address to, uint256 amount) internal {
-    if (amount == 0) return;
+  function trySafeTransferFrom(address token, address from, address to, uint256 amount)
+    internal
+    returns (bool success)
+  {
+    if (amount == 0) return true;
 
-    bool success;
     assembly ('memory-safe') {
       // Get a pointer to some free memory.
       let fmp := mload(0x40)
@@ -113,8 +133,11 @@ library TokenHelper {
       mstore(add(fmp, 0x40), 0) // 4 bytes of `to` and 28 bytes of `amount` were stored here
       mstore(add(fmp, 0x60), 0) // 4 bytes of `amount` were stored here
     }
+  }
+
+  function safeTransferFrom(address token, address from, address to, uint256 amount) internal {
     // revert with ERC20TransferFailed, containing the bubbled up error as an argument
-    if (!success) {
+    if (!trySafeTransferFrom(token, from, to, amount)) {
       CustomRevert.bubbleUpAndRevertWith(
         token, IERC20.transferFrom.selector, ERC20TransferFailed.selector
       );
