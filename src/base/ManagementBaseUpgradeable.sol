@@ -18,15 +18,6 @@ contract ManagementBaseUpgradeable is
   /// @notice By default, the role revokers for all roles are set to 0, which is the default admin role
   mapping(bytes32 role => bytes32 roleRevoker) public roleRevokers;
 
-  /// @custom:oz-upgrades-unsafe-allow constructor
-  constructor() {
-    _disableInitializers();
-  }
-
-  function initialize(uint48 initialDelay, address initialAdmin) public initializer {
-    __ManagementBase_init(initialDelay, initialAdmin);
-  }
-
   function __ManagementBase_init(uint48 initialDelay, address initialDefaultAdmin)
     internal
     onlyInitializing

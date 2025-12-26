@@ -15,14 +15,6 @@ abstract contract ManagementPausableUpgradeable is
   IManagementPausable,
   PausableUpgradeable
 {
-  constructor() {
-    _disableInitializers();
-  }
-
-  function initialize(address[] memory initialGuardians) public initializer {
-    __ManagementPausable_init(initialGuardians);
-  }
-
   function __ManagementPausable_init(address[] memory initialGuardians) internal onlyInitializing {
     _batchGrantRole(KSRoles.GUARDIAN_ROLE, initialGuardians);
   }

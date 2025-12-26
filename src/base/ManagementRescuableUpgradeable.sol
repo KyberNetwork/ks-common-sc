@@ -16,14 +16,6 @@ abstract contract ManagementRescuableUpgradeable is
 {
   using TokenHelper for address;
 
-  constructor() {
-    _disableInitializers();
-  }
-
-  function initialize(address[] memory initialRescuers) public initializer {
-    __ManagementRescuable_init(initialRescuers);
-  }
-
   function __ManagementRescuable_init(address[] memory initialRescuers) internal onlyInitializing {
     _batchGrantRole(KSRoles.RESCUER_ROLE, initialRescuers);
   }
