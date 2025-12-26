@@ -20,10 +20,10 @@ abstract contract ManagementPausableUpgradeable is
   }
 
   function initialize(address[] memory initialGuardians) public initializer {
-    __ManagementPauseable_init(initialGuardians);
+    __ManagementPausable_init(initialGuardians);
   }
 
-  function __ManagementPauseable_init(address[] memory initialGuardians) internal onlyInitializing {
+  function __ManagementPausable_init(address[] memory initialGuardians) internal onlyInitializing {
     _batchGrantRole(KSRoles.GUARDIAN_ROLE, initialGuardians);
   }
 
