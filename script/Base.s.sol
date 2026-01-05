@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
+import 'forge-std/Config.sol';
 import 'forge-std/Script.sol';
 import 'forge-std/StdJson.sol';
 
-import {Config} from 'forge-std/Config.sol';
-import 'openzeppelin-contracts/contracts/token/ERC20/IERC20.sol';
-import 'openzeppelin-contracts/contracts/utils/Address.sol';
+import {ICREATE3Factory} from 'src/interfaces/ICREATE3Factory.sol';
 
 contract BaseScript is Script, Config {
   using stdJson for string;
-  using Address for address;
 
   event ReadAddress(string key, address result);
   event ReadBool(string key, bool result);
@@ -60,14 +58,7 @@ contract BaseScript is Script, Config {
   }
 
   function _readAddress(string memory key) internal returns (address result) {
-    string memory json = _getJsonString(key);
-    if (json.keyExists(_dotChainId())) {
-      result = json.readAddress(_dotChainId());
-    } else {
-      result = json.readAddress('.0');
-    }
-
-    emit ReadAddress(key, result);
+    return _readAddressByChainId(key, vm.getChainId());
   }
 
   function _readAddressByChainId(string memory key, uint256 chainId)
@@ -103,14 +94,7 @@ contract BaseScript is Script, Config {
   }
 
   function _readBool(string memory key) internal returns (bool result) {
-    string memory json = _getJsonString(key);
-    if (json.keyExists(_dotChainId())) {
-      result = json.readBool(_dotChainId());
-    } else {
-      result = json.readBool('.0');
-    }
-
-    emit ReadBool(key, result);
+    return _readBoolByChainId(key, vm.getChainId());
   }
 
   function _readBoolByChainId(string memory key, uint256 chainId) internal returns (bool result) {
@@ -132,14 +116,7 @@ contract BaseScript is Script, Config {
   }
 
   function _readAddressArray(string memory key) internal returns (address[] memory result) {
-    string memory json = _getJsonString(key);
-    if (json.keyExists(_dotChainId())) {
-      result = json.readAddressArray(_dotChainId());
-    } else {
-      result = json.readAddressArray('.0');
-    }
-
-    emit ReadAddressArray(key, result);
+    return _readAddressArrayByChainId(key, vm.getChainId());
   }
 
   function _readAddressArrayByChainId(string memory key, uint256 chainId)
@@ -167,14 +144,7 @@ contract BaseScript is Script, Config {
   }
 
   function _readBytes(string memory key) internal returns (bytes memory result) {
-    string memory json = _getJsonString(key);
-    if (json.keyExists(_dotChainId())) {
-      result = json.readBytes(_dotChainId());
-    } else {
-      result = json.readBytes('.0');
-    }
-
-    emit ReadBytes(key, result);
+    return _readBytesByChainId(key, vm.getChainId());
   }
 
   function _readBytesByChainId(string memory key, uint256 chainId)
@@ -201,14 +171,7 @@ contract BaseScript is Script, Config {
   }
 
   function _readBytesArray(string memory key) internal returns (bytes[] memory result) {
-    string memory json = _getJsonString(key);
-    if (json.keyExists(_dotChainId())) {
-      result = json.readBytesArray(_dotChainId());
-    } else {
-      result = json.readBytesArray('.0');
-    }
-
-    emit ReadBytesArray(key, result);
+    return _readBytesArrayByChainId(key, vm.getChainId());
   }
 
   function _readBytesArrayByChainId(string memory key, uint256 chainId)
@@ -241,11 +204,15 @@ contract BaseScript is Script, Config {
    */
   function _create3Deploy(bytes32 salt, bytes memory creationCode)
     internal
-    returns (address deployed)
+    returns (address deployed, bool success)
   {
-    bytes memory result = _create3Deployer()
-      .functionCall(abi.encodeWithSignature('deploy(bytes32,bytes)', salt, creationCode));
-    deployed = abi.decode(result, (address));
+    address create3Deployer = _create3Deployer();
+    deployed = ICREATE3Factory(create3Deployer).getDeployed(msg.sender, salt);
+
+    if (deployed.code.length == 0) {
+      success = true;
+      ICREATE3Factory(create3Deployer).deploy(salt, creationCode);
+    }
   }
 
   function _toDotChainId(uint256 chainId) internal view returns (string memory) {
@@ -258,10 +225,6 @@ contract BaseScript is Script, Config {
 
   function _chainId() internal returns (string memory) {
     return vm.toString(vm.getChainId());
-  }
-
-  function _chainIdUint() internal view returns (uint256) {
-    return vm.getChainId();
   }
 
   function _getRpcUrl(string memory chainIdOrAlias) internal returns (string memory) {
