@@ -207,7 +207,8 @@ contract BaseScript is Script, Config {
     returns (address deployed, bool success)
   {
     address create3Deployer = _create3Deployer();
-    deployed = ICREATE3Factory(create3Deployer).getDeployed(msg.sender, salt);
+    (, address deployer,) = vm.readCallers();
+    deployed = ICREATE3Factory(create3Deployer).getDeployed(deployer, salt);
 
     if (deployed.code.length == 0) {
       success = true;
