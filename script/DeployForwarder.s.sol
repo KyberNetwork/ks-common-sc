@@ -11,15 +11,17 @@ contract DeployForwarderScript is BaseScript {
     if (bytes(salt).length == 0) {
       revert('salt is required');
     }
-    salt = string.concat('KSGenericForwarder_', salt);
+    string memory contractSalt = string.concat('KSGenericForwarder_', salt);
 
     vm.startBroadcast();
-    (address forwarder,) =
-      _create3Deploy(keccak256(abi.encodePacked(salt)), type(KSGenericForwarder).creationCode);
+    (address forwarder,) = _create3Deploy(
+      keccak256(abi.encodePacked(contractSalt)), type(KSGenericForwarder).creationCode
+    );
     vm.stopBroadcast();
 
-    _writeAddress('forwarder', forwarder);
-
+    if (vm.isContext(VmSafe.ForgeContext.ScriptBroadcast)) {
+      _writeAddress('forwarder', forwarder);
+    }
     emit DeployContract('KSGenericForwarder', forwarder);
   }
 }
