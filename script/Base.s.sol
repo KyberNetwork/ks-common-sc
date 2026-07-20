@@ -6,6 +6,7 @@ import 'forge-std/Script.sol';
 import 'forge-std/StdJson.sol';
 
 import {ICREATE3Factory} from 'src/interfaces/ICREATE3Factory.sol';
+import {ICreateX} from 'src/interfaces/ICreateX.sol';
 
 contract BaseScript is Script, Config {
   using stdJson for string;
@@ -19,6 +20,8 @@ contract BaseScript is Script, Config {
   event DeployContract(string key, address result);
 
   address internal constant DEFAULT_CREATE3_DEPLOYER = 0xc7c662Fc760FE1d5cB97fd8A68cb43A046da3F7d;
+
+  address internal constant DEFAULT_CREATEX_DEPLOYER = 0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed;
 
   string path;
 
@@ -47,6 +50,10 @@ contract BaseScript is Script, Config {
 
   function _create3Deployer() internal returns (address) {
     return _readAddressOr('create3-deployer', DEFAULT_CREATE3_DEPLOYER);
+  }
+
+  function _createXDeployer() internal returns (address) {
+    return _readAddressOr('createx-deployer', DEFAULT_CREATEX_DEPLOYER);
   }
 
   function _getJsonString(string memory key) internal view returns (string memory) {
@@ -213,6 +220,20 @@ contract BaseScript is Script, Config {
     if (deployed.code.length == 0) {
       success = true;
       ICREATE3Factory(create3Deployer).deploy(salt, creationCode);
+    }
+  }
+
+  function _createXDeploy(bytes32 salt, bytes memory creationCode)
+    internal
+    returns (address deployed, bool success)
+  {
+    address createXDeployer = _createXDeployer();
+    (, address deployer,) = vm.readCallers();
+    deployed = ICreateX(createXDeployer).computeCreate3Address(salt, deployer);
+
+    if (deployed.code.length == 0) {
+      success = true;
+      ICreateX(createXDeployer).deployCreate3(salt, creationCode);
     }
   }
 
