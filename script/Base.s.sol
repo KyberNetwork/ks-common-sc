@@ -229,11 +229,19 @@ contract BaseScript is Script, Config {
   {
     address createXDeployer = _createXDeployer();
     (, address deployer,) = vm.readCallers();
-    deployed = ICreateX(createXDeployer).computeCreate3Address(salt, deployer);
+
+    bytes32 createXSalt;
+    assembly ('memory-safe') {
+      createXSalt := or(shl(96, deployer), and(sub(shl(88, 1), 1), salt))
+    }
+
+    bytes32 guardedSalt =
+      keccak256(abi.encodePacked(bytes32(uint256(uint160(deployer))), createXSalt));
+    deployed = ICreateX(createXDeployer).computeCreate3Address(guardedSalt, createXDeployer);
 
     if (deployed.code.length == 0) {
       success = true;
-      ICreateX(createXDeployer).deployCreate3(salt, creationCode);
+      ICreateX(createXDeployer).deployCreate3(createXSalt, creationCode);
     }
   }
 
