@@ -5,13 +5,6 @@ pragma solidity ^0.8.0;
 library CalldataDecoder {
   error SliceOutOfBounds();
 
-  /// @notice mask used for offsets and lengths to ensure no overflow
-  /// @dev no sane abi encoding will pass in an offset or length greater than type(uint32).max
-  ///      (note that this does deviate from standard solidity behavior and offsets/lengths will
-  ///      be interpreted as mod type(uint32).max which will only impact malicious/buggy callers)
-  uint256 internal constant OFFSET_OR_LENGTH_MASK = 0xffffffff;
-  uint256 internal constant OFFSET_OR_LENGTH_MASK_AND_WORD_ALIGN = 0xffffffe0;
-
   /// @notice equivalent to SliceOutOfBounds.selector, stored in least-significant bits
   uint256 internal constant SLICE_ERROR_SELECTOR = 0x3b99b53d;
 
