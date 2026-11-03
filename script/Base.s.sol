@@ -5,8 +5,8 @@ import 'forge-std/Config.sol';
 import 'forge-std/Script.sol';
 import 'forge-std/StdJson.sol';
 
-import {ICREATE3Factory} from 'src/interfaces/ICREATE3Factory.sol';
-import {ICreateX} from 'src/interfaces/ICreateX.sol';
+import {ICREATE3Factory} from '../src/interfaces/ICREATE3Factory.sol';
+import {ICreateX} from '../src/interfaces/ICreateX.sol';
 
 contract BaseScript is Script, Config {
   using stdJson for string;
