@@ -140,6 +140,21 @@ library CalldataDecoder {
     }
   }
 
+  /// @notice Decode the `_arg`-th element in `_bytes` as `bytes[]`
+  /// @param _bytes The input bytes string to extract a bytes array from
+  /// @param _arg The index of the argument to extract
+  function decodeBytesArray(bytes calldata _bytes, uint256 _arg)
+    internal
+    pure
+    returns (bytes[] calldata res)
+  {
+    (uint256 length, uint256 offset) = decodeLengthOffset(_bytes, _arg);
+    assembly ('memory-safe') {
+      res.length := length
+      res.offset := offset
+    }
+  }
+
   /// @notice Decode the `_arg`-th element in `_bytes` as `bytes32[]`
   /// @param _bytes The input bytes string to extract a bytes32 array from
   /// @param _arg The index of the argument to extract
